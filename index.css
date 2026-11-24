@@ -1,0 +1,54 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg: #f2f7ff;
+  --surface: #ffffff;
+  --surface-2: #eaf2ff;
+  --ink: #10233f;
+  --muted: #5b6f8d;
+  --line: #d6e3f5;
+  --primary: #1668dc;
+  --primary-dark: #0f4fb0;
+  --danger: #e0302a;
+  --danger-soft: #ffe7e2;
+  --warning: #f07d12;
+  --success: #108a55;
+  --success-soft: #dff7e9;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0b1626;
+    --surface: #13233b;
+    --surface-2: #1a3050;
+    --ink: #eef5ff;
+    --muted: #aabed8;
+    --line: #2b4469;
+    --primary: #55a0ff;
+    --primary-dark: #7db8ff;
+    --danger: #ff7a72;
+    --danger-soft: #4a2226;
+    --warning: #ffb35c;
+    --success: #65d99a;
+    --success-soft: #173d2d;
+  }
+}
+
+* { box-sizing: border-box; }
+html { background: var(--bg); }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: "Sarabun", "Leelawadee UI", "Segoe UI", Tahoma, sans-serif;
+  line-height: 1.65;
+}
+button, input, textarea { font: inherit; }
+button { cursor: pointer; }
+button:disabled { cursor: not-allowed; opacity: .55; }
+::selection { background: #bcd8ff; }
+.thai-display { font-family: "Kanit", "Sarabun", "Leelawadee UI", sans-serif; letter-spacing: -.01em; }
+.word-btn { overflow-wrap: anywhere; }
+.text-wrap-anywhere { overflow-wrap: anywhere; }
