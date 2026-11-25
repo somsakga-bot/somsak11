@@ -953,66 +953,10 @@
 
             let m;
 
-            // 1. ตรวจจับบริบทคำนำหน้านาม "การ" ที่พิมพ์ตก ร เรือ เป็น "กา" (เช่น "กา ทำงา", "กาทำงาน", "กาวางแผน")
-            const missingRorInKarnRegex = /(^|[\s\n("'])(กา)(\s*)([\u0E00-\u0E7F]{2,})/g;
-            while ((m = missingRorInKarnRegex.exec(text)) !== null) {
-                const prefixSpace = m[1];
-                const gaWord = m[2];
-                const midSpace = m[3];
-                const nextWord = m[4];
-                const gaStart = m.index + prefixSpace.length;
+            // กฎที่พิจารณาเฉพาะคำว่า "กา" หรือ "การ" กับคำถัดไปถูกยกเลิก
+            // เพราะอาจเป็นคำ/รูปแบบการจัดย่อหน้าที่ถูกต้อง รวมถึงชื่อเฉพาะและข้อความลำดับข้อ
 
-                const validGaPrefixes = ['กาแฟ', 'กาชาด', 'กาละ', 'กาก', 'กาพย์', 'กาฝาก', 'กาง', 'กาว', 'กาต้ม', 'กาหลง', 'กาเหว่า'];
-                const fullCombined = gaWord + nextWord;
-                if (!validGaPrefixes.some(vp => fullCombined.startsWith(vp))) {
-                    if (midSpace.length > 0) {
-                        addIssueIfFree(
-                            gaStart,
-                            gaWord + midSpace,
-                            'การ',
-                            'พิมพ์ตก / เว้นวรรคผิด',
-                            'spelling',
-                            `พิมพ์ตัวสะกด 'ร' ตกหล่นในคำนำหน้านาม 'การ' และไม่ควรเว้นวรรคระหว่างคำว่า 'การ' กับคำกริยา/นามที่ตามหลัง`
-                        );
-                    } else {
-                        addIssueIfFree(
-                            gaStart,
-                            gaWord,
-                            'การ',
-                            'พิมพ์ตก',
-                            'spelling',
-                            `พิมพ์ตัวสะกด 'ร' ตกหล่น คำนำหน้านามที่ถูกต้องตามบริบทคือ 'การ'`
-                        );
-                    }
-                }
-            }
-
-            // 2. ตรวจจับคำว่า "การ" ที่เว้นวรรคแยกออกจากคำกริยาที่ตามหลัง (เช่น "การ ทำงาน")
-            const spacedKarnRegex = /(^|[\s\n("'])(การ)(\s+)([\u0E00-\u0E7F]{2,})/g;
-            while ((m = spacedKarnRegex.exec(text)) !== null) {
-                const karnStart = m.index + m[1].length;
-                addIssueIfFree(
-                    karnStart,
-                    m[2] + m[3],
-                    'การ',
-                    'เว้นวรรคผิด',
-                    'spacing',
-                    'คำว่า "การ" เป็นคำนำหน้านาม ต้องเขียนติดกับคำที่ตามหลังโดยไม่เว้นวรรค'
-                );
-            }
-
-            // 3. ตรวจจับไม้ยมก (ๆ) ที่ติดกับคำหน้าโดยไม่เว้นวรรค
-            const maiYamokRegex = /([\u0E00-\u0E7F]+)(ๆ)/g;
-            while ((m = maiYamokRegex.exec(text)) !== null) {
-                addIssueIfFree(
-                    m.index,
-                    m[0],
-                    `${m[1]} ๆ`,
-                    'เว้นวรรคผิด',
-                    'spacing',
-                    'ตามหลักสำนักงานราชบัณฑิตยสภา ต้องเว้นวรรค 1 เคาะข้างหน้าและข้างหลังเครื่องหมายไม้ยมก (ๆ) เสมอ'
-                );
-            }
+            // ไม่บังคับเว้นวรรคไม้ยมก (ๆ) โดยอัตโนมัติ เพราะรูปแบบขึ้นกับการจัดวางและบริบท
 
             // 4. ตรวจจับสระเอซ้อน 2 ตัว (เเ) แทนสระแอ (แ)
             const doubleERegex = /[\u0E00-\u0E7F]*เเ[\u0E00-\u0E7F]*/g;
@@ -1077,30 +1021,9 @@
                 }
             }
 
-            // 8. ตรวจจับคำที่ไม่รู้จักด้วย Intl.Segmenter + Levenshtein Fuzzy Match (ระยะห่าง 1 ตัวอักษร)
-            if (typeof Intl !== 'undefined' && Intl.Segmenter) {
-                const segmenter = new Intl.Segmenter('th', { granularity: 'word' });
-                const segments = segmenter.segment(text);
-                for (const seg of segments) {
-                    const word = seg.segment;
-                    if (!seg.isWordLike || word.length < 4 || !/^[\u0E00-\u0E7F]+$/.test(word)) continue;
-                    if (THAI_LEXICON_SET.has(word) || OFFLINE_MISSPELLINGS[word]) continue;
-
-                    const closeMatch = findClosestThaiWord(word);
-                    if (closeMatch) {
-                        const diffType = word.length < closeMatch.length ? 'พิมพ์ตก'
-                            : word.length > closeMatch.length ? 'พิมพ์เกิน' : 'พิมพ์ผิด';
-                        addIssueIfFree(
-                            seg.index,
-                            word,
-                            closeMatch,
-                            diffType,
-                            'spelling',
-                            `ตรวจพบความคลาดเคลื่อนของตัวอักษรจากคำมาตรฐาน "${closeMatch}" (${diffType} 1 ตำแหน่ง)`
-                        );
-                    }
-                }
-            }
+            // 8. ปิด Fuzzy Matching อัตโนมัติ: คลังคำยังไม่ครอบคลุมศัพท์ราชการ/ชื่อเฉพาะทั้งหมด
+            // การจับคำที่ไม่อยู่ในคลังด้วย Edit Distance 1 ทำให้เกิด false positives จำนวนมาก
+            // จึงไม่ไฮไลต์คำที่ไม่รู้จักโดยอัตโนมัติอีกต่อไป ใช้ AI และกฎคำผิดที่ระบุชัดแทน
 
             // 9. ตรวจรูปแบบเว้นวรรค/เครื่องหมายซ้ำที่พบบ่อย (ไม่ปรับช่องว่างเพื่อจัดรูปแบบย่อหน้า)
             const doubleSpaceRegex = / {2,}/g;
@@ -1148,7 +1071,8 @@
                 addIssueIfFree(m.index, m[0], m[1], 'วรรคตอน/รูปแบบผิด', 'spacing', 'พบเครื่องหมายวรรคตอนซ้ำหลายตัว ควรตรวจและใช้เครื่องหมายเท่าที่จำเป็น');
             }
 
-            return issues.sort((a, b) => a.index - b.index);
+            return issues.filter(issue => issue.original.trim().length > 0)
+                .sort((a, b) => a.index - b.index);
         }
 
         // คำนวณระยะห่างความต่างของตัวอักษร (Levenshtein Distance)
@@ -1188,9 +1112,11 @@
 
         // รวมผลลัพธ์จาก AI และ Offline โดยไม่ให้ช่วงตัวอักษรทับซ้อนกัน
         function mergeAndDeduplicateIssues(fullText, aiIssues, offlineIssues) {
-            const candidates = [...aiIssues, ...offlineIssues]
+            const candidates = [...offlineIssues, ...aiIssues]
                 .filter(issue => issue && typeof issue.original === 'string' && issue.original.length > 0
                     && typeof issue.correct === 'string' && issue.original !== issue.correct
+                    && issue.original.trim().length > 0
+                    && !(issue.original.length === 1 && /[\u0E00-\u0E7F]/.test(issue.original) && issue.category !== 'เว้นวรรคผิด')
                     && Number.isInteger(issue.index) && issue.index >= 0
                     && issue.index + issue.original.length <= fullText.length
                     && fullText.slice(issue.index, issue.index + issue.original.length) === issue.original)
