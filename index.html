@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>สแกนตรวจคำผิดภาษาไทย</title>
+    <title>สแกนตรวจคำผิดและไวยากรณ์ภาษาไทยระดับมืออาชีพ (Gemini AI)</title>
     <!-- โหลด Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- โหลดฟอนต์ Sarabun และ Prompt -->
@@ -19,55 +19,71 @@
     <style>
         body {
             font-family: 'Prompt', 'Sarabun', sans-serif;
-            background-color: #f4f7fb;
+            background-color: #f3f6fb;
             color: #1e293b;
         }
         .doc-font {
             font-family: 'Sarabun', sans-serif;
-            line-height: 1.95;
-            font-size: 1.075rem;
+            line-height: 2.0;
+            font-size: 1.08rem;
         }
-        /* สไตล์คำผิดจริง (สีแดง) */
-        .word-error {
+        /* หมวด 1: สะกดผิด / พิมพ์ตก / พิมพ์เกิน / ตัวการันต์ / วรรณยุกต์ (สีแดง) */
+        .hl-spelling {
             background-color: #fee2e2;
             color: #b91c1c;
             border-bottom: 2px wavy #ef4444;
             padding: 1px 4px;
-            border-radius: 4px;
+            border-radius: 5px;
             cursor: pointer;
             font-weight: 600;
             transition: all 0.15s ease;
         }
-        .word-error:hover {
+        .hl-spelling:hover {
             background-color: #fecaca;
-            box-shadow: 0 2px 6px rgba(239, 68, 68, 0.25);
+            box-shadow: 0 2px 6px rgba(239, 68, 68, 0.28);
         }
-        /* สไตล์คำไม่อยู่ในพจนานุกรม (สีส้ม) */
-        .word-unknown {
+        /* หมวด 2: คำสันธาน / คำเชื่อม / ไวยากรณ์ / รูปประโยค (สีม่วง) */
+        .hl-grammar {
+            background-color: #f3e8ff;
+            color: #6b21a8;
+            border-bottom: 2px wavy #9333ea;
+            padding: 1px 4px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.15s ease;
+        }
+        .hl-grammar:hover {
+            background-color: #e9d5ff;
+            box-shadow: 0 2px 6px rgba(147, 51, 234, 0.28);
+        }
+        /* หมวด 3: เว้นวรรคผิด (สีส้ม) */
+        .hl-spacing {
             background-color: #ffedd5;
             color: #c2410c;
             border-bottom: 2px dashed #f97316;
             padding: 1px 4px;
-            border-radius: 4px;
+            border-radius: 5px;
             cursor: pointer;
+            font-weight: 600;
             transition: all 0.15s ease;
         }
-        .word-unknown:hover {
+        .hl-spacing:hover {
             background-color: #fed7aa;
-            box-shadow: 0 2px 6px rgba(249, 115, 22, 0.25);
+            box-shadow: 0 2px 6px rgba(249, 115, 22, 0.28);
         }
-        /* สไตล์คำที่แก้ไขแล้ว (สีเขียวจางชั่วคราว) */
-        .word-fixed {
+        /* สถานะที่แก้ไขแล้ว (สีเขียว) */
+        .hl-fixed {
             background-color: #dcfce7;
             color: #15803d;
             border-bottom: 2px solid #22c55e;
             padding: 1px 4px;
-            border-radius: 4px;
+            border-radius: 5px;
             font-weight: 600;
         }
-        /* สไตล์โซนลากวางไฟล์ */
+        /* โซน Drag & Drop */
         .drop-zone-active {
-            border-color: #2563eb !important;
+            border-color: #1d4ed8 !important;
             background-color: #eff6ff !important;
             transform: scale(1.005);
         }
@@ -92,21 +108,24 @@
 <body class="min-h-screen flex flex-col">
 
     <!-- 1. ส่วนหัว (Header) -->
-    <header class="bg-gradient-to-r from-slate-900 via-blue-950 to-indigo-950 text-white sticky top-0 z-30 shadow-md">
+    <header class="bg-gradient-to-r from-slate-950 via-blue-950 to-indigo-950 text-white sticky top-0 z-30 shadow-lg">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
             <div class="flex items-center gap-3.5">
                 <div class="w-11 h-11 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white shadow-lg shadow-blue-900/50 shrink-0 border border-blue-400/30">
-                    <i data-lucide="file-search-2" class="w-6 h-6"></i>
+                    <i data-lucide="sparkles" class="w-6 h-6"></i>
                 </div>
                 <div>
-                    <h1 class="text-xl sm:text-2xl font-bold tracking-tight text-white">สแกนตรวจคำผิดภาษาไทย</h1>
-                    <p class="text-xs sm:text-sm text-blue-200">รองรับไฟล์ Word (.docx), Excel (.xlsx), PDF และข้อความราชการ ตรวจแก้ได้ทันที</p>
+                    <div class="flex items-center gap-2 flex-wrap">
+                        <h1 class="text-lg sm:text-2xl font-bold tracking-tight text-white">สแกนตรวจคำผิดและไวยากรณ์ภาษาไทย</h1>
+                        <span class="px-2.5 py-0.5 text-[11px] font-semibold rounded-full bg-blue-500/25 text-blue-200 border border-blue-400/30">Gemini AI + Hybrid</span>
+                    </div>
+                    <p class="text-xs sm:text-sm text-blue-200/90">ตรวจครบ 10 หมวดหมู่: พิมพ์ตก/เกิน สะกดผิด การันต์ วรรณยุกต์ เว้นวรรค คำสันธาน และไวยากรณ์</p>
                 </div>
             </div>
             <div class="flex items-center gap-2 self-end sm:self-center">
-                <span class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs sm:text-sm font-medium bg-emerald-500/15 text-emerald-300 border border-emerald-400/30">
+                <span id="engineBadge" class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs sm:text-sm font-medium bg-emerald-500/15 text-emerald-300 border border-emerald-400/30">
                     <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                    ประมวลผลปลอดภัยในเครื่อง 100%
+                    พร้อมวิเคราะห์อัจฉริยะ
                 </span>
             </div>
         </div>
@@ -116,18 +135,18 @@
     <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
 
-            <!-- 2. คอลัมน์ซ้าย (พื้นที่อัปโหลดไฟล์ พิมพ์ข้อความ และผลลัพธ์ - 8 คอลัมน์) -->
+            <!-- 2. คอลัมน์ซ้าย (นำเข้าไฟล์ + กล่องข้อความ + ผลลัพธ์ - 8 คอลัมน์) -->
             <div class="lg:col-span-8 space-y-6">
 
                 <!-- การ์ดอัปโหลดไฟล์เอกสาร (Word, Excel, PDF, TXT) -->
                 <section class="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-5 sm:p-6">
                     <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
                         <h2 class="text-sm sm:text-base font-bold text-slate-800 flex items-center gap-2">
-                            <i data-lucide="folder-up" class="w-5 h-5 text-blue-700"></i>
-                            นำเข้าไฟล์เอกสารเพื่อตรวจคำผิด
+                            <i data-lucide="folder-up" class="w-5 h-5 text-blue-800"></i>
+                            นำเข้าไฟล์เอกสารเพื่อตรวจคำผิดและไวยากรณ์
                         </h2>
                         <div class="flex items-center gap-1.5 text-xs font-medium">
-                            <span class="px-2 py-0.5 rounded-md bg-blue-50 text-blue-700 border border-blue-200">.DOCX</span>
+                            <span class="px-2 py-0.5 rounded-md bg-blue-50 text-blue-800 border border-blue-200">.DOCX</span>
                             <span class="px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200">.XLSX / .CSV</span>
                             <span class="px-2 py-0.5 rounded-md bg-rose-50 text-rose-700 border border-rose-200">.PDF</span>
                             <span class="px-2 py-0.5 rounded-md bg-slate-100 text-slate-600 border border-slate-200">.TXT</span>
@@ -138,7 +157,7 @@
                     <div
                         id="dropZone"
                         onclick="document.getElementById('fileInput').click()"
-                        class="border-2 border-dashed border-slate-300 hover:border-blue-500 rounded-2xl p-5 sm:p-6 text-center bg-slate-50/70 hover:bg-blue-50/40 transition-all cursor-pointer group"
+                        class="border-2 border-dashed border-slate-300 hover:border-blue-600 rounded-2xl p-4 sm:p-5 text-center bg-slate-50/70 hover:bg-blue-50/40 transition-all cursor-pointer group"
                     >
                         <input
                             type="file"
@@ -147,29 +166,33 @@
                             accept=".docx,.xlsx,.xls,.csv,.pdf,.txt"
                             onchange="handleFileSelect(event)"
                         >
-                        <div class="w-12 h-12 rounded-2xl bg-blue-100 text-blue-700 flex items-center justify-center mx-auto mb-3 group-hover:scale-105 transition-transform">
-                            <i data-lucide="upload-cloud" class="w-6 h-6"></i>
+                        <div class="flex flex-col sm:flex-row items-center justify-center gap-3">
+                            <div class="w-11 h-11 rounded-2xl bg-blue-100 text-blue-800 flex items-center justify-center group-hover:scale-105 transition-transform shrink-0">
+                                <i data-lucide="upload-cloud" class="w-6 h-6"></i>
+                            </div>
+                            <div class="text-center sm:text-left">
+                                <p class="text-sm sm:text-base font-semibold text-slate-800">
+                                    คลิกเพื่อเลือกไฟล์ หรือลากไฟล์มาวางที่นี่
+                                </p>
+                                <p class="text-xs text-slate-500 mt-0.5">
+                                    รองรับ Word (.docx), Excel (.xlsx, .xls, .csv), PDF (.pdf) และ Text (.txt) ดึงข้อความภาษาไทยอัตโนมัติ
+                                </p>
+                            </div>
                         </div>
-                        <p class="text-sm sm:text-base font-semibold text-slate-700">
-                            คลิกเพื่อเลือกไฟล์ หรือลากไฟล์มาวางที่นี่
-                        </p>
-                        <p class="text-xs text-slate-500 mt-1">
-                            รองรับ Word (.docx), Excel (.xlsx, .xls, .csv), PDF (.pdf) และ Text (.txt) — ดึงข้อความภาษาไทยให้อัตโนมัติ
-                        </p>
                     </div>
 
                     <!-- แถบแสดงสถานะการอ่านไฟล์ -->
-                    <div id="fileInfoBar" class="hidden mt-3.5 p-3.5 rounded-xl bg-blue-50/80 border border-blue-200 flex flex-wrap items-center justify-between gap-3">
+                    <div id="fileInfoBar" class="hidden mt-3.5 p-3.5 rounded-xl bg-blue-50/90 border border-blue-200 flex flex-wrap items-center justify-between gap-3">
                         <div class="flex items-center gap-3 min-w-0">
-                            <div id="fileTypeIcon" class="w-9 h-9 rounded-xl bg-blue-600 text-white flex items-center justify-center shrink-0">
+                            <div id="fileTypeIcon" class="w-9 h-9 rounded-xl bg-blue-700 text-white flex items-center justify-center shrink-0">
                                 <i data-lucide="file-text" class="w-5 h-5"></i>
                             </div>
                             <div class="min-w-0">
                                 <div id="fileNameDisplay" class="text-sm font-bold text-slate-800 truncate">ชื่อไฟล์.docx</div>
-                                <div id="fileMetaDisplay" class="text-xs text-blue-700">อ่านข้อมูลสำเร็จ</div>
+                                <div id="fileMetaDisplay" class="text-xs text-blue-800">อ่านข้อมูลสำเร็จ</div>
                             </div>
                         </div>
-                        <button onclick="clearUploadedFile()" type="button" class="text-xs font-medium text-slate-500 hover:text-red-600 px-2.5 py-1.5 rounded-lg hover:bg-white transition-all cursor-pointer">
+                        <button onclick="clearUploadedFile()" type="button" class="text-xs font-medium text-slate-600 hover:text-red-600 px-3 py-1.5 rounded-lg hover:bg-white transition-all cursor-pointer">
                             เอาไฟล์ออก
                         </button>
                     </div>
@@ -177,60 +200,59 @@
 
                 <!-- การ์ดกล่องพิมพ์ข้อความ -->
                 <section class="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-5 sm:p-6">
-                    <div class="flex items-center justify-between mb-3">
+                    <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
                         <label for="inputText" class="text-sm font-semibold text-slate-700 flex items-center gap-2">
-                            <i data-lucide="file-edit" class="w-4 h-4 text-blue-700"></i>
-                            ข้อความที่นำเข้าจากไฟล์ หรือพิมพ์/วางข้อความภาษาไทยที่นี่
+                            <i data-lucide="file-edit" class="w-4 h-4 text-blue-800"></i>
+                            พิมพ์หรือวางข้อความภาษาไทยที่นี่
                         </label>
-                        <span id="charCount" class="text-xs text-slate-400">0 ตัวอักษร</span>
+                        <div class="flex items-center gap-3">
+                            <button onclick="clearCustomDictionary()" type="button" class="text-xs text-blue-800 hover:underline font-medium inline-flex items-center gap-1 cursor-pointer">
+                                <i data-lucide="book-check" class="w-3.5 h-3.5"></i>
+                                คำที่ละเว้น (<span id="customDictCount">0</span>)
+                            </button>
+                            <span id="charCount" class="text-xs text-slate-400">0 ตัวอักษร</span>
+                        </div>
                     </div>
 
                     <textarea
                         id="inputText"
-                        rows="8"
-                        class="w-full rounded-xl border border-slate-300 bg-slate-50/50 focus:bg-white focus:border-blue-600 focus:ring-4 focus:ring-blue-600/10 p-4 text-slate-800 doc-font transition-all resize-y outline-none"
-                        placeholder="อัปโหลดไฟล์ Word / Excel / PDF ด้านบน หรือวางข้อความหนังสือราชการ บันทึกข้อความ รายงาน ที่นี่..."
+                        rows="7"
+                        class="w-full rounded-xl border border-slate-300 bg-slate-50/50 focus:bg-white focus:border-blue-700 focus:ring-4 focus:ring-blue-700/10 p-4 text-slate-800 doc-font transition-all resize-y outline-none"
+                        placeholder="วางข้อความ หรืออัปโหลดไฟล์ Word / Excel / PDF ด้านบน ระบบจะวิเคราะห์คำพิมพ์ตก สะกดผิด วรรณยุกต์ การันต์ เว้นวรรค คำเชื่อม และไวยากรณ์ให้ทันที..."
                     ></textarea>
 
-                    <!-- ปุ่มควบคุมใต้กล่องข้อความ -->
-                    <div class="mt-4 flex flex-wrap items-center gap-2.5">
-                        <button onclick="loadSampleWithErrors()" type="button" class="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-full text-sm font-medium bg-blue-900 hover:bg-blue-800 active:scale-98 text-white shadow-sm transition-all cursor-pointer">
-                            <i data-lucide="sparkles" class="w-4 h-4"></i>
-                            ลองข้อความตัวอย่าง (มีคำผิด)
+                    <!-- ปุ่มควบคุมและตัวอย่างทดสอบ 3 แบบ -->
+                    <div class="mt-4 flex flex-wrap items-center gap-2">
+                        <button id="checkBtn" onclick="runFullAnalysis()" type="button" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-semibold bg-blue-900 hover:bg-blue-800 active:scale-98 text-white shadow-md shadow-blue-900/20 transition-all cursor-pointer">
+                            <i data-lucide="scan-search" class="w-4 h-4"></i>
+                            <span>ตรวจคำผิดและไวยากรณ์</span>
                         </button>
 
-                        <button onclick="loadSampleOfficial()" type="button" class="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-full text-sm font-medium bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 transition-all cursor-pointer">
-                            <i data-lucide="file-check-2" class="w-4 h-4 text-blue-700"></i>
-                            ตัวอย่างหนังสือราชการ
+                        <button onclick="loadSample10Categories()" type="button" class="inline-flex items-center gap-1.5 px-3.5 py-2.5 rounded-full text-xs sm:text-sm font-medium bg-indigo-50 hover:bg-indigo-100 text-indigo-900 border border-indigo-200 transition-all cursor-pointer">
+                            <i data-lucide="sparkles" class="w-3.5 h-3.5 text-indigo-600"></i>
+                            ทดสอบ 10 หมวด (ทำงา/กาวางแผง)
                         </button>
 
-                        <button onclick="runSpellCheck()" type="button" class="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-full text-sm font-semibold bg-emerald-600 hover:bg-emerald-700 active:scale-98 text-white shadow-sm shadow-emerald-200 transition-all cursor-pointer">
-                            <i data-lucide="check-circle-2" class="w-4 h-4"></i>
-                            ตรวจคำผิดทันที
+                        <button onclick="loadSampleOfficialWithErrors()" type="button" class="inline-flex items-center gap-1.5 px-3.5 py-2.5 rounded-full text-xs sm:text-sm font-medium bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200 transition-all cursor-pointer">
+                            <i data-lucide="file-warning" class="w-3.5 h-3.5 text-amber-600"></i>
+                            หนังสือราชการ (มีจุดผิดแฝง)
                         </button>
 
-                        <button onclick="clearAll()" type="button" class="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-full text-sm font-medium bg-slate-100 hover:bg-slate-200 text-slate-600 transition-all cursor-pointer ml-auto sm:ml-0">
-                            <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
+                        <button onclick="loadSampleOfficialClean()" type="button" class="inline-flex items-center gap-1.5 px-3.5 py-2.5 rounded-full text-xs sm:text-sm font-medium bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 transition-all cursor-pointer">
+                            <i data-lucide="file-check-2" class="w-3.5 h-3.5 text-emerald-600"></i>
+                            หนังสือราชการถูกต้อง
+                        </button>
+
+                        <button onclick="clearAll()" type="button" class="inline-flex items-center gap-1.5 px-3.5 py-2.5 rounded-full text-xs sm:text-sm font-medium bg-slate-100 hover:bg-slate-200 text-slate-600 transition-all cursor-pointer ml-auto">
+                            <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i>
                             ล้าง
                         </button>
                     </div>
 
-                    <!-- ตัวเลือก Checkbox -->
-                    <div class="mt-4 pt-3.5 border-t border-slate-100 flex flex-wrap items-center justify-between gap-2 text-xs sm:text-sm">
-                        <label class="inline-flex items-center gap-2 cursor-pointer select-none text-slate-600">
-                            <input type="checkbox" id="checkUnknownToggle" onchange="runSpellCheck()" class="w-4 h-4 rounded text-blue-700 focus:ring-blue-600 border-slate-300">
-                            <span>ตรวจคำที่ไม่อยู่ในพจนานุกรม <span class="text-orange-600 font-medium">(ไฮไลต์สีส้ม)</span> — ชื่อเฉพาะอาจถูกเตือนด้วย</span>
-                        </label>
-                        <button onclick="clearCustomDictionary()" type="button" class="text-blue-700 hover:text-blue-900 hover:underline font-medium inline-flex items-center gap-1 cursor-pointer">
-                            <i data-lucide="book-x" class="w-3.5 h-3.5"></i>
-                            ล้างคำที่เพิ่มเอง (<span id="customDictCount">0</span>)
-                        </button>
-                    </div>
-
-                    <!-- แถบสถานะผลการตรวจ -->
-                    <div id="statusBanner" class="mt-3.5 px-4 py-2.5 rounded-xl bg-slate-100 text-slate-600 text-sm flex items-center gap-2">
-                        <i data-lucide="info" class="w-4 h-4 text-blue-700 shrink-0"></i>
-                        <span>พร้อมตรวจสอบ อัปโหลดไฟล์ <strong>Word / Excel / PDF</strong> หรือกด <strong>"ลองข้อความตัวอย่าง (มีคำผิด)"</strong></span>
+                    <!-- แถบสถานะผลการตรวจ / Progress Bar -->
+                    <div id="statusBanner" class="mt-4 px-4 py-3 rounded-xl bg-slate-100 text-slate-600 text-sm flex items-center gap-2.5">
+                        <i data-lucide="info" class="w-4 h-4 text-blue-800 shrink-0"></i>
+                        <span>พร้อมวิเคราะห์ภาษาไทยครบ 10 หมวดหมู่ กดปุ่ม <strong>"ทดสอบ 10 หมวด (ทำงา/กาวางแผง)"</strong> หรือพิมพ์ข้อความของคุณได้เลย</span>
                     </div>
                 </section>
 
@@ -239,23 +261,52 @@
                     <div class="flex flex-wrap items-center justify-between gap-3 pb-4 mb-4 border-b border-slate-100">
                         <div>
                             <h2 class="text-base sm:text-lg font-bold text-slate-800 flex items-center gap-2">
-                                <i data-lucide="highlighter" class="w-5 h-5 text-blue-700"></i>
+                                <i data-lucide="highlighter" class="w-5 h-5 text-blue-800"></i>
                                 ข้อความพร้อมคำแนะนำ
                             </h2>
-                            <p class="text-xs text-slate-500 mt-0.5">คลิกที่คำไฮไลต์สีแดงเพื่อดูเหตุผลตามพจนานุกรมราชบัณฑิตยสถานและกดแก้ไขได้ทันที</p>
+                            <p class="text-xs text-slate-500 mt-0.5">คลิกที่คำไฮไลต์เพื่อดูหมวดหมู่ความผิด หลักภาษา และกดแก้ไขทีละจุด</p>
                         </div>
-                        <button onclick="copyCorrectedText()" type="button" class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium bg-blue-50 hover:bg-blue-100 text-blue-800 border border-blue-200 transition-all cursor-pointer">
-                            <i data-lucide="copy" class="w-4 h-4"></i>
-                            คัดลอกข้อความที่แก้แล้ว
+
+                        <div class="flex items-center gap-2">
+                            <button onclick="copyCorrectedText()" type="button" class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs sm:text-sm font-medium bg-blue-50 hover:bg-blue-100 text-blue-900 border border-blue-200 transition-all cursor-pointer">
+                                <i data-lucide="copy" class="w-4 h-4"></i>
+                                คัดลอกข้อความที่แก้แล้ว
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- ตัวกรองเลือกดูตามหมวดหมู่สีไฮไลต์ -->
+                    <div class="flex flex-wrap items-center gap-2 mb-4 text-xs">
+                        <span class="text-slate-500 font-medium mr-1">ตัวกรองไฮไลต์:</span>
+                        <button onclick="setFilterGroup('all')" id="filter-all" type="button" class="px-3 py-1.5 rounded-full font-semibold bg-slate-800 text-white transition-all cursor-pointer">
+                            แสดงทั้งหมด (<span id="count-all">0</span>)
+                        </button>
+                        <button onclick="setFilterGroup('spelling')" id="filter-spelling" type="button" class="px-3 py-1.5 rounded-full font-medium bg-red-50 text-red-700 border border-red-200 hover:bg-red-100 transition-all cursor-pointer">
+                            🔴 สะกด/พิมพ์ตก-เกิน/การันต์/วรรณยุกต์ (<span id="count-spelling">0</span>)
+                        </button>
+                        <button onclick="setFilterGroup('grammar')" id="filter-grammar" type="button" class="px-3 py-1.5 rounded-full font-medium bg-purple-50 text-purple-700 border border-purple-200 hover:bg-purple-100 transition-all cursor-pointer">
+                            🟣 สันธาน/คำเชื่อม/ไวยากรณ์ (<span id="count-grammar">0</span>)
+                        </button>
+                        <button onclick="setFilterGroup('spacing')" id="filter-spacing" type="button" class="px-3 py-1.5 rounded-full font-medium bg-orange-50 text-orange-700 border border-orange-200 hover:bg-orange-100 transition-all cursor-pointer">
+                            🟠 การเว้นวรรค (<span id="count-spacing">0</span>)
                         </button>
                     </div>
 
                     <!-- พื้นที่แสดงข้อความที่ผ่านการวิเคราะห์แล้ว -->
-                    <div id="resultDisplay" class="min-h-[220px] p-5 rounded-xl bg-slate-50/70 border border-slate-200/70 doc-font text-slate-800 whitespace-pre-wrap break-words">
-                        <div class="h-44 flex flex-col items-center justify-center text-slate-400 text-center">
+                    <div id="resultDisplay" class="min-h-[240px] p-5 rounded-xl bg-slate-50/70 border border-slate-200/70 doc-font text-slate-800 whitespace-pre-wrap break-words">
+                        <div class="h-48 flex flex-col items-center justify-center text-slate-400 text-center">
                             <i data-lucide="file-search" class="w-10 h-10 mb-2 opacity-40"></i>
-                            <p class="text-sm">ผลลัพธ์การตรวจคำผิดจะแสดงในพื้นที่นี้</p>
+                            <p class="text-sm">ผลลัพธ์การวิเคราะห์คำผิดและไวยากรณ์จะแสดงในพื้นที่นี้</p>
                         </div>
+                    </div>
+
+                    <!-- รายการสรุปจุดผิดทั้งหมดแบบ List (ช่วยให้ไล่ตรวจเอกสารยาวๆ ง่ายขึ้น) -->
+                    <div id="issueListContainer" class="hidden mt-5 pt-4 border-t border-slate-100">
+                        <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-3 flex items-center gap-1.5">
+                            <i data-lucide="list-checks" class="w-4 h-4 text-blue-800"></i>
+                            รายการจุดที่พบทั้งหมดในเอกสาร (คลิกเพื่อแก้ไขแต่ละรายการ)
+                        </h3>
+                        <div id="issueListCards" class="grid grid-cols-1 md:grid-cols-2 gap-2.5 max-h-72 overflow-y-auto custom-scroll pr-1"></div>
                     </div>
                 </section>
 
@@ -264,39 +315,40 @@
             <!-- 3. คอลัมน์ขวา (แผงสรุปผลและเครื่องมือจัดการ - 4 คอลัมน์) -->
             <aside class="lg:col-span-4 space-y-6 lg:sticky lg:top-24">
 
-                <!-- แผงสรุปผลและปุ่มจัดการหลัก -->
+                <!-- แผงสรุปผล 3 หมวดหลัก -->
                 <div class="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-5 sm:p-6">
                     <h2 class="text-base font-bold text-slate-800 mb-4 flex items-center gap-2">
-                        <i data-lucide="bar-chart-3" class="w-5 h-5 text-blue-700"></i>
+                        <i data-lucide="bar-chart-3" class="w-5 h-5 text-blue-800"></i>
                         สรุปผลการตรวจสอบ
                     </h2>
 
-                    <!-- ตัวเลขสรุป 2 ช่อง -->
-                    <div class="grid grid-cols-2 gap-3 mb-4">
-                        <div class="p-3.5 rounded-xl bg-red-50 border border-red-100">
-                            <div class="text-xs font-medium text-red-600 mb-1">พบคำสะกดผิดจริง</div>
-                            <div class="flex items-baseline gap-1.5">
-                                <span id="errorCountDisplay" class="text-2xl sm:text-3xl font-bold text-red-700">0</span>
-                                <span class="text-xs text-red-600">จุด</span>
-                            </div>
+                    <!-- ตัวเลขสรุป 3 ช่อง -->
+                    <div class="grid grid-cols-3 gap-2.5 mb-4">
+                        <div class="p-3 rounded-xl bg-red-50 border border-red-100 text-center">
+                            <div class="text-[11px] font-medium text-red-600 mb-0.5">สะกด/ตก/เกิน</div>
+                            <div id="statSpelling" class="text-2xl font-bold text-red-700">0</div>
+                            <div class="text-[10px] text-red-500">จุด</div>
                         </div>
-                        <div class="p-3.5 rounded-xl bg-orange-50 border border-orange-100">
-                            <div class="text-xs font-medium text-orange-600 mb-1">ไม่อยู่ในพจนานุกรม</div>
-                            <div class="flex items-baseline gap-1.5">
-                                <span id="unknownCountDisplay" class="text-2xl sm:text-3xl font-bold text-orange-700">0</span>
-                                <span class="text-xs text-orange-600">จุด</span>
-                            </div>
+                        <div class="p-3 rounded-xl bg-purple-50 border border-purple-100 text-center">
+                            <div class="text-[11px] font-medium text-purple-700 mb-0.5">ไวยากรณ์/เชื่อม</div>
+                            <div id="statGrammar" class="text-2xl font-bold text-purple-800">0</div>
+                            <div class="text-[10px] text-purple-600">จุด</div>
+                        </div>
+                        <div class="p-3 rounded-xl bg-orange-50 border border-orange-100 text-center">
+                            <div class="text-[11px] font-medium text-orange-600 mb-0.5">เว้นวรรค</div>
+                            <div id="statSpacing" class="text-2xl font-bold text-orange-700">0</div>
+                            <div class="text-[10px] text-orange-500">จุด</div>
                         </div>
                     </div>
 
                     <p class="text-xs text-slate-500 mb-5 leading-relaxed">
-                        แตะคำสีแดงในข้อความด้านซ้ายเพื่อดูเหตุผลและคำแนะนำ หรือกดปุ่มด้านล่างเพื่อแก้คำผิดสีแดงทั้งหมดในคลิกเดียว
+                        แตะที่คำไฮไลต์ในข้อความด้านซ้ายเพื่ออ่านเหตุผลตามหลักภาษาไทยและกดแก้รายจุด หรือกดปุ่มด้านล่างเพื่อแก้ทั้งหมดในคลิกเดียว
                     </p>
 
                     <!-- ปุ่มเครื่องมือหลัก -->
                     <div class="space-y-3">
-                        <button id="fixAllBtn" onclick="fixAllErrors()" type="button" class="w-full py-3.5 px-5 rounded-full font-semibold text-white bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 active:scale-99 shadow-md shadow-orange-200 flex items-center justify-center gap-2 transition-all cursor-pointer">
-                            <span>🪄 แก้คำผิดทั้งหมดอัตโนมัติ</span>
+                        <button id="fixAllBtn" onclick="fixAllIssues()" type="button" class="w-full py-3.5 px-5 rounded-full font-semibold text-white bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 active:scale-99 shadow-md shadow-orange-200 flex items-center justify-center gap-2 transition-all cursor-pointer">
+                            <span>🪄 แก้ไขจุดผิดทั้งหมดอัตโนมัติ</span>
                         </button>
 
                         <button onclick="downloadCorrectedTxt()" type="button" class="w-full py-3 px-5 rounded-full font-semibold text-white bg-blue-900 hover:bg-blue-800 flex items-center justify-center gap-2 transition-all cursor-pointer shadow-xs">
@@ -314,7 +366,7 @@
                             <span>ดาวน์โหลดรายงานคำผิด (CSV)</span>
                         </button>
 
-                        <button onclick="saveCurrentResult()" type="button" class="w-full py-2.5 px-5 rounded-full font-medium text-slate-600 hover:text-blue-800 bg-white hover:bg-slate-50 border border-slate-300 flex items-center justify-center gap-2 transition-all cursor-pointer text-sm">
+                        <button onclick="saveCurrentResult()" type="button" class="w-full py-2.5 px-5 rounded-full font-medium text-slate-600 hover:text-blue-900 bg-white hover:bg-slate-50 border border-slate-300 flex items-center justify-center gap-2 transition-all cursor-pointer text-sm">
                             <span>💾 บันทึกผลตรวจนี้ลงประวัติ</span>
                         </button>
                     </div>
@@ -329,7 +381,7 @@
                         </h3>
                         <button onclick="clearHistory()" type="button" class="text-xs text-slate-400 hover:text-red-600 cursor-pointer">ล้างประวัติ</button>
                     </div>
-                    <div id="historyList" class="space-y-2.5 max-h-64 overflow-y-auto custom-scroll pr-1">
+                    <div id="historyList" class="space-y-2.5 max-h-60 overflow-y-auto custom-scroll pr-1">
                         <p class="text-xs text-slate-400 text-center py-4">ยังไม่มีรายการที่บันทึก</p>
                     </div>
                 </div>
@@ -339,46 +391,35 @@
     </main>
 
     <!-- Popover / Tooltip สำหรับแสดงคำแนะนำเมื่อคลิกที่คำไฮไลต์ -->
-    <div id="wordPopover" class="hidden fixed z-50 w-80 max-w-[92vw] bg-white rounded-2xl shadow-2xl border border-slate-200 p-4 transition-opacity">
-        <div class="flex items-start justify-between gap-2 mb-2">
+    <div id="wordPopover" class="hidden fixed z-50 w-85 max-w-[92vw] bg-white rounded-2xl shadow-2xl border border-slate-200 p-4 transition-opacity">
+        <div class="flex items-start justify-between gap-2 mb-2.5">
             <span id="popoverBadge" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-red-100 text-red-700">
-                คำสะกดผิด
+                หมวดหมู่ความผิด
             </span>
             <button onclick="closePopover()" type="button" class="text-slate-400 hover:text-slate-600 p-0.5 cursor-pointer">
                 <i data-lucide="x" class="w-4 h-4"></i>
             </button>
         </div>
 
-        <div class="mb-2">
-            <div class="text-xs text-slate-400">คำที่พบ:</div>
-            <div id="popoverOriginalWord" class="text-base font-bold text-slate-800 break-words"></div>
+        <div class="mb-2.5">
+            <div class="text-[11px] text-slate-400">ข้อความเดิมที่พบ:</div>
+            <div id="popoverOriginalWord" class="text-base font-bold text-slate-800 break-words bg-slate-50 px-2.5 py-1.5 rounded-lg border border-slate-200/70 mt-0.5"></div>
         </div>
 
-        <div id="popoverReasonBox" class="mb-3 p-2.5 rounded-xl bg-slate-50 border border-slate-100 text-xs text-slate-600 leading-relaxed">
+        <div id="popoverReasonBox" class="mb-3 p-3 rounded-xl bg-blue-50/60 border border-blue-100 text-xs text-slate-700 leading-relaxed">
         </div>
 
-        <!-- กรณีคำผิดจริง: แสดงปุ่มเปลี่ยนเป็นคำที่ถูกต้อง -->
-        <div id="popoverErrorActions" class="space-y-2">
-            <div class="text-xs font-medium text-slate-500">คำที่ถูกต้องตามพจนานุกรม:</div>
-            <button id="popoverFixBtn" type="button" class="w-full py-2 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-sm flex items-center justify-center gap-1.5 shadow-xs cursor-pointer">
-                <i data-lucide="check" class="w-4 h-4"></i>
-                <span id="popoverCorrectWord"></span>
+        <div class="space-y-2">
+            <div class="text-xs font-medium text-slate-500">คำแนะนำที่ถูกต้อง:</div>
+            <button id="popoverFixBtn" type="button" class="w-full py-2.5 px-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-sm flex items-center justify-center gap-1.5 shadow-xs cursor-pointer transition-all">
+                <i data-lucide="check" class="w-4 h-4 shrink-0"></i>
+                <span id="popoverCorrectWord" class="truncate"></span>
             </button>
-        </div>
 
-        <!-- กรณีคำไม่อยู่ในพจนานุกรม: เพิ่มลงพจนานุกรมส่วนตัว หรือ แก้ไขเอง -->
-        <div id="popoverUnknownActions" class="hidden space-y-2.5">
-            <button id="popoverAddDictBtn" type="button" class="w-full py-2 px-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-medium text-xs flex items-center justify-center gap-1.5 cursor-pointer">
-                <i data-lucide="book-plus" class="w-4 h-4"></i>
-                เพิ่มลงพจนานุกรมส่วนตัว (ไม่ต้องเตือนอีก)
+            <button id="popoverIgnoreBtn" type="button" class="w-full py-2 px-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium text-xs flex items-center justify-center gap-1.5 cursor-pointer transition-all">
+                <i data-lucide="book-plus" class="w-3.5 h-3.5"></i>
+                <span>เพิ่มในพจนานุกรมส่วนตัว (ละเว้นคำนี้)</span>
             </button>
-            <div class="pt-2 border-t border-slate-100">
-                <label class="block text-xs text-slate-500 mb-1">หรือพิมพ์แก้ไขคำนี้เอง:</label>
-                <div class="flex gap-1.5">
-                    <input type="text" id="popoverManualInput" class="flex-1 text-sm border border-slate-300 rounded-lg px-2.5 py-1.5 focus:border-blue-500 outline-none">
-                    <button id="popoverManualSaveBtn" type="button" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-900 text-white text-xs font-medium cursor-pointer">แก้</button>
-                </div>
-            </div>
         </div>
     </div>
 
@@ -386,277 +427,83 @@
     <div id="toastContainer" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
 
     <script>
-        // ตั้งค่า Worker ของ PDF.js ให้พร้อมอ่านไฟล์ PDF ทันที
+        // ตั้งค่า Worker ของ PDF.js
         if (typeof pdfjsLib !== 'undefined') {
             pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
         }
 
         // ============================================================================
-        // 1. ฐานข้อมูลคำที่มักเขียนผิดในภาษาไทยและหนังสือราชการ (มากกว่า 260+ คู่คำ)
+        // 1. คลังฐานข้อมูลกฎ Offline Rule-based สำรอง (Hybrid Pre-scan & Fallback)
         // ============================================================================
-        const COMMON_MISSPELLINGS = {
-            "อณุญาต": { correct: "อนุญาต", reason: "คำว่า 'อนุญาต' เขียนด้วย น หนู และไม่มีสระอิที่ ต เต่า (มาจากภาษาบาลี อนุ + ญาติ)" },
-            "อณุญาติ": { correct: "อนุญาต", reason: "คำว่า 'อนุญาต' ใช้ น หนู และไม่มีสระอิที่ ต เต่า (คำที่มีสระอิคือ 'ญาติพี่น้อง')" },
-            "อนุญาติ": { correct: "อนุญาต", reason: "คำว่า 'อนุญาต' (การยินยอม) ไม่มีสระอิที่ ต เต่า" },
-            "กฏหมาย": { correct: "กฎหมาย", reason: "คำว่า 'กฎหมาย' ใช้ ฎ ชฎา (หยักเดียว) ไม่ใช่ ฏ ปฏัก" },
-            "กฏกระทรวง": { correct: "กฎกระทรวง", reason: "คำว่า 'กฎ' ใช้ ฎ ชฎา (หยักเดียว) ไม่ใช่ ฏ ปฏัก" },
-            "กฏระเบียบ": { correct: "กฎระเบียบ", reason: "คำว่า 'กฎ' ใช้ ฎ ชฎา (หยักเดียว) ไม่ใช่ ฏ ปฏัก" },
-            "กฏเกณฑ์": { correct: "กฎเกณฑ์", reason: "คำว่า 'กฎ' ใช้ ฎ ชฎา (หยักเดียว) ไม่ใช่ ฏ ปฏัก" },
-            "กฏ": { correct: "กฎ", reason: "คำว่า 'กฎ' ใช้ ฎ ชฎา (หยักเดียว)" },
-            "สังเกตุ": { correct: "สังเกต", reason: "คำว่า 'สังเกต' ไม่มีสระอุที่ ต เต่า (คำที่มีสระอุคือ 'สาเหตุ' และ 'เกตุ')" },
-            "ปรากฎ": { correct: "ปรากฏ", reason: "คำว่า 'ปรากฏ' ใช้ ฏ ปฏัก (สองหยัก) ไม่ใช่ ฎ ชฎา" },
-            "ปรากฎการณ์": { correct: "ปรากฏการณ์", reason: "คำว่า 'ปรากฏ' ใช้ ฏ ปฏัก (สองหยัก)" },
-            "โอกาศ": { correct: "โอกาส", reason: "คำว่า 'โอกาส' สะกดด้วย ส เสือ ไม่ใช่ ศ ศาลา" },
-            "ศรีษะ": { correct: "ศีรษะ", reason: "คำว่า 'ศีรษะ' สระอีอยู่บน ศ ศาลา (อ่านว่า สี-สะ)" },
-            "เซ็นต์": { correct: "เซ็น", reason: "คำว่า 'เซ็น' (ลงนาม) ไม่มี ต์ การันต์ (คำว่า 'เซ็นต์' ใช้กับหน่วยเงินดอลลาร์)" },
-            "เซ็นต์ชื่อ": { correct: "เซ็นชื่อ", reason: "คำว่า 'เซ็นชื่อ' ไม่มี ต์ การันต์" },
-            "ลายเซ็นต์": { correct: "ลายเซ็น", reason: "คำว่า 'ลายเซ็น' ไม่มี ต์ การันต์" },
-            "ปราณีต": { correct: "ประณีต", reason: "คำว่า 'ประณีต' ใช้สระอะ (ประ-) ไม่ใช่สระอา (ปรา-)" },
-            "กระเพรา": { correct: "กะเพรา", reason: "ชื่อพืช 'กะเพรา' ไม่มี ร เรือ ควบกล้ำ" },
-            "กระพริบ": { correct: "กะพริบ", reason: "คำว่า 'กะพริบ' ไม่มี ร เรือ ที่พยางค์แรก" },
-            "กระทันหัน": { correct: "กะทันหัน", reason: "คำว่า 'กะทันหัน' ไม่มี ร เรือ ที่พยางค์แรก" },
-            "กระตือรือล้น": { correct: "กระตือรือร้น", reason: "คำว่า 'ร้น' ใช้ ร เรือ ไม่ใช่ ล ลิง" },
-            "คลีนิค": { correct: "คลินิก", reason: "คำทับศัพท์ภาษาอังกฤษ clinic พจนานุกรมราชบัณฑิตยฯ กำหนดให้เขียน 'คลินิก'" },
-            "คลินิค": { correct: "คลินิก", reason: "ตัวสะกดแม่กกใช้ ก ไก่ เขียนว่า 'คลินิก'" },
-            "คอลัมภ์": { correct: "คอลัมน์", reason: "คำทับศัพท์ column ใช้ น์ การันต์ เขียนว่า 'คอลัมน์'" },
-            "คอลัมป์": { correct: "คอลัมน์", reason: "คำทับศัพท์ column ใช้ น์ การันต์ เขียนว่า 'คอลัมน์'" },
-            "โค้ต": { correct: "โค้ด", reason: "คำทับศัพท์ code ใช้ ด เด็ก สะกด เขียนว่า 'โค้ด'" },
-            "สเตตัส": { correct: "สเตตัส", reason: "ถูกต้อง" },
-            "เปอเซ็นต์": { correct: "เปอร์เซ็นต์", reason: "คำว่า 'เปอร์เซ็นต์' ต้องมี ร การันต์ ที่คำว่า เปอร์" },
-            "เปอเซ็น": { correct: "เปอร์เซ็นต์", reason: "เขียนให้ถูกต้องว่า 'เปอร์เซ็นต์'" },
-            "บิณฑบาตร": { correct: "บิณฑบาต", reason: "คำว่า 'บิณฑบาต' (การรับอาหารของพระ) ไม่มี ร เรือ (คำว่า 'บาตร' มี ร เรือ เมื่อหมายถึงภาชนะ)" },
-            "ผัดไท": { correct: "ผัดไทย", reason: "ชื่ออาหารประจำชาติเขียนว่า 'ผัดไทย' (มี ย ยักษ์)" },
-            "ลาดหน้า": { correct: "ราดหน้า", reason: "ชื่ออาหาร 'ราดหน้า' ใช้ ร เรือ (ราดน้ำซอสลงบนเส้น)" },
-            "ก๊วยเตี๋ยว": { correct: "ก๋วยเตี๋ยว", reason: "คำว่า 'ก๋วยเตี๋ยว' ใช้ไม้จัตวา (ก๋วย) ไม่ใช่ไม้ตรี" },
-            "รสชาด": { correct: "รสชาติ", reason: "คำว่า 'รสชาติ' สะกดด้วย ติ ไม่ใช่ ด เด็ก" },
-            "รสชาต": { correct: "รสชาติ", reason: "คำว่า 'รสชาติ' ต้องมีสระอิที่ ต เต่า" },
-            "รสาติ": { correct: "รสชาติ", reason: "สะกดที่ถูกต้องคือ 'รสชาติ'" },
-            "ญาต": { correct: "ญาติ", reason: "คำว่า 'ญาติ' (พี่น้อง) ต้องมีสระอิ" },
-            "ญาตพี่น้อง": { correct: "ญาติพี่น้อง", reason: "คำว่า 'ญาติ' ต้องมีสระอิ เขียนว่า 'ญาติพี่น้อง'" },
-            "อัพเดท": { correct: "อัปเดต", reason: "คำทับศัพท์ update ราชบัณฑิตยฯ กำหนดให้ใช้ ป ปลา และ ต เต่า เขียนว่า 'อัปเดต'" },
-            "อัพเดต": { correct: "อัปเดต", reason: "คำทับศัพท์ update ใช้ ป ปลา เขียนว่า 'อัปเดต'" },
-            "อัพโหลด": { correct: "อัปโหลด", reason: "คำทับศัพท์ upload ใช้ ป ปลา เขียนว่า 'อัปโหลด'" },
-            "เว็ปไซต์": { correct: "เว็บไซต์", reason: "คำทับศัพท์ website ใช้ บ ใบไม้ เขียนว่า 'เว็บไซต์'" },
-            "เวบไซต์": { correct: "เว็บไซต์", reason: "คำทับศัพท์ website ต้องมีไม้ไต่คู้ เขียนว่า 'เว็บไซต์'" },
-            "เวบ": { correct: "เว็บ", reason: "คำทับศัพท์ web เขียนว่า 'เว็บ'" },
-            "เว็ป": { correct: "เว็บ", reason: "คำทับศัพท์ web ใช้ บ ใบไม้ เขียนว่า 'เว็บ'" },
-            "อีเมล์": { correct: "อีเมล", reason: "คำทับศัพท์ email ไม่มี ล์ การันต์ เขียนว่า 'อีเมล'" },
-            "อิเล็คทรอนิกส์": { correct: "อิเล็กทรอนิกส์", reason: "พยางค์ 'เล็ก' ใช้ ก ไก่ สะกด" },
-            "อิเล็กทรอนิคส์": { correct: "อิเล็กทรอนิกส์", reason: "พยางค์ 'นิกส์' ใช้ ก ไก่ สะกด" },
-            "อินเตอร์เน็ต": { correct: "อินเทอร์เน็ต", reason: "คำทับศัพท์ internet ราชบัณฑิตยฯ กำหนดให้เขียน 'อินเทอร์เน็ต'" },
-            "อินเตอร์เนต": { correct: "อินเทอร์เน็ต", reason: "เขียนว่า 'อินเทอร์เน็ต'" },
-            "เปอร์เซ็น": { correct: "เปอร์เซ็นต์", reason: "คำว่า 'เปอร์เซ็นต์' ต้องมี ต์ การันต์" },
-            "โปรโมชั่น": { correct: "โปรโมชัน", reason: "คำทับศัพท์ promotion ไม่ใส่ไม้เอก เขียนว่า 'โปรโมชัน'" },
-            "ฟังก์ชั่น": { correct: "ฟังก์ชัน", reason: "คำทับศัพท์ function ไม่ใส่ไม้เอก เขียนว่า 'ฟังก์ชัน'" },
-            "เวอร์ชั่น": { correct: "เวอร์ชัน", reason: "คำทับศัพท์ version ไม่ใส่ไม้เอก เขียนว่า 'เวอร์ชัน'" },
-            "แอพพลิเคชั่น": { correct: "แอปพลิเคชัน", reason: "คำทับศัพท์ application ใช้ ป ปลา และไม่มีไม้เอก เขียนว่า 'แอปพลิเคชัน'" },
-            "แอปพลิเคชั่น": { correct: "แอปพลิเคชัน", reason: "คำทับศัพท์ application ไม่ใส่ไม้เอก เขียนว่า 'แอปพลิเคชัน'" },
-            "กราฟฟิก": { correct: "กราฟิก", reason: "คำทับศัพท์ graphic ใช้ ฟ ฟัน ตัวเดียว เขียนว่า 'กราฟิก'" },
-            "กราฟฟิค": { correct: "กราฟิก", reason: "เขียนว่า 'กราฟิก'" },
-            "ก็อปปี้": { correct: "ก๊อปปี้", reason: "ใช้ไม้ตรี (ก๊อปปี้)" },
-            "โควต้า": { correct: "โควตา", reason: "คำทับศัพท์ quota ไม่มีไม้โท เขียนว่า 'โควตา'" },
-            "เคาท์เตอร์": { correct: "เคาน์เตอร์", reason: "ตัวการันต์อยู่ที่ น หนู (เคาน์เตอร์)" },
-            "แคลเซี่ยม": { correct: "แคลเซียม", reason: "คำทับศัพท์ calcium ไม่มีไม้เอก เขียนว่า 'แคลเซียม'" },
-            "โซเดี่ยม": { correct: "โซเดียม", reason: "คำทับศัพท์ sodium ไม่มีไม้เอก เขียนว่า 'โซเดียม'" },
-            "อลูมิเนียม": { correct: "อะลูมิเนียม", reason: "คำทับศัพท์ aluminium มีสระอะ เขียนว่า 'อะลูมิเนียม'" },
-            "ซีรี่ย์": { correct: "ซีรีส์", reason: "คำทับศัพท์ series เขียนว่า 'ซีรีส์'" },
-            "ซีรี่ส์": { correct: "ซีรีส์", reason: "คำทับศัพท์ series ใช้สระอีไม่มีไม้เอก เขียนว่า 'ซีรีส์'" },
-            "ดีไซด์": { correct: "ดีไซน์", reason: "คำทับศัพท์ design ใช้ น์ การันต์" },
-            "เทรน": { correct: "เทรนด์", reason: "หากหมายถึงกระแสนิยม (trend) ต้องมี ด์ การันต์" },
-            "โน๊ต": { correct: "โน้ต", reason: "น หนู เป็นอักษรต่ำ ผันด้วยไม้โทได้เสียงตรี เขียนว่า 'โน้ต'" },
-            "เบรค": { correct: "เบรก", reason: "คำทับศัพท์ brake ใช้ ก ไก่ สะกด เขียนว่า 'เบรก'" },
-            "พลาสติค": { correct: "พลาสติก", reason: "ใช้ ก ไก่ สะกด เขียนว่า 'พลาสติก'" },
-            "ฟุลบอล": { correct: "ฟุตบอล", reason: "เขียนว่า 'ฟุตบอล'" },
-            "ล็อคอิน": { correct: "ล็อกอิน", reason: "คำทับศัพท์ log in ใช้ ก ไก่ สะกด เขียนว่า 'ล็อกอิน'" },
-            "ล็อค": { correct: "ล็อก", reason: "คำทับศัพท์ lock ใช้ ก ไก่ สะกด เขียนว่า 'ล็อก'" },
-            "สเตป": { correct: "สเต็ป", reason: "มีไม้ไต่คู้ เขียนว่า 'สเต็ป'" },
-            "สไตส์": { correct: "สไตล์", reason: "คำทับศัพท์ style ใช้ ล์ การันต์" },
-            "ออฟฟิต": { correct: "ออฟฟิศ", reason: "คำทับศัพท์ office ใช้ ษ ฤๅษี สะกด เขียนว่า 'ออฟฟิศ'" },
-            "ออฟฟิส": { correct: "ออฟฟิศ", reason: "คำทับศัพท์ office ใช้ ษ ฤๅษี สะกด เขียนว่า 'ออฟฟิศ'" },
-            "ไอศครีม": { correct: "ไอศกรีม", reason: "คำทับศัพท์ ice cream ใช้ ก ไก่ เขียนว่า 'ไอศกรีม'" },
-            "ไอติม": { correct: "ไอศกรีม", reason: "ภาษาเขียนและหนังสือราชการควรใช้ 'ไอศกรีม'" },
-            "กังวาล": { correct: "กังวาน", reason: "คำว่า 'กังวาน' (เสียงก้อง) สะกดด้วย น หนู (คำว่า 'วาล' แปลว่า ขน)" },
-            "กาละเทศะ": { correct: "กาลเทศะ", reason: "คำว่า 'กาลเทศะ' ไม่มีสระอะหลัง ล ลิง" },
-            "กำเหนิด": { correct: "กำเนิด", reason: "ไม่มี ห หีบ เขียนว่า 'กำเนิด'" },
-            "กิจลักษณะ": { correct: "กิจจะลักษณะ", reason: "เขียนเต็มว่า 'กิจจะลักษณะ'" },
-            "เกลียดคร้าน": { correct: "เกียจคร้าน", reason: "คำว่า 'เกียจคร้าน' (ขี้เกียจ) ไม่มี ล ลิง ควบกล้ำ" },
-            "เกษียร": { correct: "เกษียณ", reason: "หากหมายถึงครบกำหนดอายุราชการ (เกษียณอายุ) ใช้ ณ เณร (คำว่า 'เกษียร' แปลว่า น้ำนม)" },
-            "เกษียรอายุ": { correct: "เกษียณอายุ", reason: "ครบกำหนดอายุราชการ ใช้ ณ เณร เขียนว่า 'เกษียณอายุ'" },
-            "ขะโมย": { correct: "ขโมย", reason: "เขียนลดรูปเป็น 'ขโมย'" },
-            "ขะมวด": { correct: "ขมวด", reason: "เขียนลดรูปเป็น 'ขมวด'" },
-            "คาดเคลื่อน": { correct: "คลาดเคลื่อน", reason: "ต้องมี ล ลิง ควบกล้ำ เขียนว่า 'คลาดเคลื่อน'" },
-            "คำนวน": { correct: "คำนวณ", reason: "สะกดด้วย ณ เณร เขียนว่า 'คำนวณ'" },
-            "คุณณภาพ": { correct: "คุณภาพ", reason: "เขียนว่า 'คุณภาพ'" },
-            "งบประมาน": { correct: "งบประมาณ", reason: "คำว่า 'ประมาณ' สะกดด้วย ณ เณร" },
-            "จารจร": { correct: "จราจร", reason: "เขียนว่า 'จราจร'" },
-            "จำนงค์": { correct: "จำนง", reason: "คำว่า 'จำนง' (ความต้องการ) ไม่มี ค์ การันต์ (คำว่า 'อนงค์' มี ค์ การันต์)" },
-            "เจตนารมย์": { correct: "เจตนารมณ์", reason: "คำว่า 'เจตนารมณ์' ใช้ ณ เณร การันต์" },
-            "เจตนารม": { correct: "เจตนารมณ์", reason: "คำว่า 'เจตนารมณ์' ต้องมี ณ์ การันต์" },
-            "ชล่าใจ": { correct: "ชะล่าใจ", reason: "ต้องมีสระอะ เขียนว่า 'ชะล่าใจ'" },
-            "ซ่อมแซ่ม": { correct: "ซ่อมแซม", reason: "คำว่า 'แซม' ไม่มีไม้เอก เขียนว่า 'ซ่อมแซม'" },
-            "ดำเนิร": { correct: "ดำเนิน", reason: "สะกดด้วย น หนู เขียนว่า 'ดำเนิน'" },
-            "ตระกร้า": { correct: "ตะกร้า", reason: "พยางค์แรกไม่มี ร เรือ เขียนว่า 'ตะกร้า'" },
-            "ตะเตรียม": { correct: "ตระเตรียม", reason: "พยางค์แรกมี ร เรือ เขียนว่า 'ตระเตรียม'" },
-            "ทนุถนอม": { correct: "ทะนุถนอม", reason: "พยางค์แรกมีสระอะ เขียนว่า 'ทะนุถนอม'" },
-            "ทะนุบำรุง": { correct: "ทำนุบำรุง", reason: "คำที่ถูกต้องตามพจนานุกรมคือ 'ทำนุบำรุง' (คำว่า 'ทะนุ' ใช้กับ 'ทะนุถนอม')" },
-            "ทะแยง": { correct: "ทแยง", reason: "เขียนลดรูปเป็น 'ทแยง'" },
-            "ฑูต": { correct: "ทูต", reason: "คำว่า 'ทูต' ใช้ ท ทหาร ไม่ใช่ ฑ มณโฑ" },
-            "ธุระกิจ": { correct: "ธุรกิจ", reason: "คำสมาสไม่ต้องประวิสรรชนีย์ (ไม่มีสระอะ) เขียนว่า 'ธุรกิจ'" },
-            "นวตกรรม": { correct: "นวัตกรรม", reason: "มีไม้หันอากาศ เขียนว่า 'นวัตกรรม'" },
-            "นะโยบาย": { correct: "นโยบาย", reason: "เขียนลดรูปเป็น 'นโยบาย'" },
-            "บรรเทิง": { correct: "บันเทิง", reason: "คำว่า 'บันเทิง' ใช้ บัน (บ-ไม้หันอากาศ-น) ไม่ใช่ บรร" },
-            "บันเทา": { correct: "บรรเทา", reason: "คำว่า 'บรรเทา' ใช้ บรร (ร หัน)" },
-            "บรรดาล": { correct: "บันดาล", reason: "คำว่า 'บันดาล' ใช้ บัน ไม่ใช่ บรร" },
-            "บรรทึก": { correct: "บันทึก", reason: "คำว่า 'บันทึก' ใช้ บัน ไม่ใช่ บรร" },
-            "บรรได": { correct: "บันได", reason: "คำว่า 'บันได' ใช้ บัน ไม่ใช่ บรร" },
-            "บันยากาศ": { correct: "บรรยากาศ", reason: "คำว่า 'บรรยากาศ' ใช้ บรร (ร หัน)" },
-            "บันจุ": { correct: "บรรจุ", reason: "คำว่า 'บรรจุ' ใช้ บรร (ร หัน)" },
-            "บันทัด": { correct: "บรรทัด", reason: "คำว่า 'บรรทัด' ใช้ บรร (ร หัน)" },
-            "บริจาก": { correct: "บริจาค", reason: "สะกดด้วย ค ควาย เขียนว่า 'บริจาค'" },
-            "บริษัษ": { correct: "บริษัท", reason: "สะกดด้วย ท ทหาร เขียนว่า 'บริษัท'" },
-            "ปาฏิหารย์": { correct: "ปาฏิหาริย์", reason: "มีสระอิที่ ร เรือ เขียนว่า 'ปาฏิหาริย์'" },
-            "ปาฏิหาร": { correct: "ปาฏิหาริย์", reason: "สะกดที่ถูกต้องคือ 'ปาฏิหาริย์'" },
-            "ปฎิเสธ": { correct: "ปฏิเสธ", reason: "คำว่า 'ปฏิเสธ' ใช้ ฏ ปฏัก (สองหยัก)" },
-            "ปฎิบัติ": { correct: "ปฏิบัติ", reason: "คำว่า 'ปฏิบัติ' ใช้ ฏ ปฏัก (สองหยัก)" },
-            "ปฎิบัติการ": { correct: "ปฏิบัติการ", reason: "คำว่า 'ปฏิบัติ' ใช้ ฏ ปฏัก (สองหยัก)" },
-            "ปฎิทิน": { correct: "ปฏิทิน", reason: "คำว่า 'ปฏิทิน' ใช้ ฏ ปฏัก (สองหยัก)" },
-            "ปฎิรูป": { correct: "ปฏิรูป", reason: "คำว่า 'ปฏิรูป' ใช้ ฏ ปฏัก (สองหยัก)" },
-            "ปราณีประนอม": { correct: "ประนีประนอม", reason: "เขียนว่า 'ประนีประนอม'" },
-            "ประสงฆ์": { correct: "ประสงค์", reason: "ใช้ ค์ การันต์ เขียนว่า 'ประสงค์'" },
-            "ประสบการ": { correct: "ประสบการณ์", reason: "มี ณ เณร การันต์ เขียนว่า 'ประสบการณ์'" },
-            "ประสูต": { correct: "ประสูติ", reason: "ต้องมีสระอิที่ ต เต่า เขียนว่า 'ประสูติ'" },
-            "ประเสริฐ์": { correct: "ประเสริฐ", reason: "ไม่มีตัวการันต์ เขียนว่า 'ประเสริฐ'" },
-            "ประโยช": { correct: "ประโยชน์", reason: "มี น์ การันต์ เขียนว่า 'ประโยชน์'" },
-            "ปราชญา": { correct: "ปรัชญา", reason: "ใช้ไม้หันอากาศ เขียนว่า 'ปรัชญา'" },
-            "ปราสจาก": { correct: "ปราศจาก", reason: "สะกดด้วย ศ ศาลา เขียนว่า 'ปราศจาก'" },
-            "ปราสัย": { correct: "ปราศรัย", reason: "เขียนว่า 'ปราศรัย'" },
-            "ผาสุข": { correct: "ผาสุก", reason: "คำว่า 'ผาสุก' สะกดด้วย ก ไก่ ไม่ใช่ ข ไข่" },
-            "ผูกพันธ์": { correct: "ผูกพัน", reason: "คำว่า 'ผูกพัน' ไม่มี ธ ธง การันต์ (คำว่า 'สัมพันธ์' มี ธ ธง การันต์)" },
-            "สัมพัน": { correct: "สัมพันธ์", reason: "คำว่า 'สัมพันธ์' ต้องมี ธ์ การันต์" },
-            "พระยาครุฑ": { correct: "พญาครุฑ", reason: "ใช้ พ พาน (พญาครุฑ)" },
-            "พยากร์": { correct: "พยากรณ์", reason: "เขียนว่า 'พยากรณ์'" },
-            "พลกำลัง": { correct: "พละกำลัง", reason: "มีสระอะ เขียนว่า 'พละกำลัง'" },
-            "พัศดุ": { correct: "พัสดุ", reason: "คำว่า 'พัสดุ' (สิ่งของ/งานพัสดุ) ใช้ ส เสือ ไม่ใช่ ศ ศาลา" },
-            "พิจรณา": { correct: "พิจารณา", reason: "มีสระอาที่ จ จาน เขียนว่า 'พิจารณา'" },
-            "พิทัก": { correct: "พิทักษ์", reason: "มี ษ์ การันต์ เขียนว่า 'พิทักษ์'" },
-            "พิพิธภัณท์": { correct: "พิพิธภัณฑ์", reason: "ใช้ ฑ มณโฑ การันต์ เขียนว่า 'พิพิธภัณฑ์'" },
-            "พิพาษา": { correct: "พิพากษา", reason: "มี ก ไก่ สะกด เขียนว่า 'พิพากษา'" },
-            "พิสูจ": { correct: "พิสูจน์", reason: "มี น์ การันต์ เขียนว่า 'พิสูจน์'" },
-            "เพชรฆาต": { correct: "เพชฌฆาต", reason: "ใช้ ช ช้าง และ ฌ เฌอ เขียนว่า 'เพชฌฆาต'" },
-            "เพ้อเจอ": { correct: "เพ้อเจ้อ", reason: "มีไม้โททั้งสองพยางค์ เขียนว่า 'เพ้อเจ้อ'" },
-            "แพ่หลาย": { correct: "แพร่หลาย", reason: "มี ร เรือ ควบกล้ำ เขียนว่า 'แพร่หลาย'" },
-            "ภาพยนต์": { correct: "ภาพยนตร์", reason: "มี ตร์ การันต์ เขียนว่า 'ภาพยนตร์'" },
-            "ภูมใจ": { correct: "ภูมิใจ", reason: "มีสระอิที่ ม ม้า เขียนว่า 'ภูมิใจ'" },
-            "ภูมลำเนา": { correct: "ภูมิลำเนา", reason: "มีสระอิที่ ม ม้า เขียนว่า 'ภูมิลำเนา'" },
-            "มกราคา": { correct: "มกราคม", reason: "สะกดที่ถูกต้องคือ 'มกราคม'" },
-            "มรณะภาพ": { correct: "มรณภาพ", reason: "คำสมาสไม่มีสระอะ เขียนว่า 'มรณภาพ'" },
-            "มาตราฐาน": { correct: "มาตรฐาน", reason: "คำว่า 'มาตรฐาน' ไม่มีสระอาหลัง ตร" },
-            "มัธยัส": { correct: "มัธยัสถ์", reason: "มี ถ์ การันต์ เขียนว่า 'มัธยัสถ์'" },
-            "เยาววัย": { correct: "เยาว์วัย", reason: "มี ว์ การันต์ เขียนว่า 'เยาว์วัย'" },
-            "เยาว์ชน": { correct: "เยาวชน", reason: "คำว่า 'เยาวชน' ไม่มีตัวการันต์" },
-            "รวบรม": { correct: "รวบรวม", reason: "เขียนว่า 'รวบรวม'" },
-            "รังเกลียด": { correct: "รังเกียจ", reason: "คำว่า 'รังเกียจ' ไม่มี ล ลิง ควบกล้ำ" },
-            "รณรง": { correct: "รณรงค์", reason: "มี ค์ การันต์ เขียนว่า 'รณรงค์'" },
-            "ราชกาล": { correct: "ราชการ", reason: "คำว่า 'ราชการ' (งานของพระเจ้าแผ่นดิน/แผ่นดิน) ใช้ ร เรือ สะกด" },
-            "ราษฏร": { correct: "ราษฎร", reason: "ใช้ ฎ ชฎา (หยักเดียว) เขียนว่า 'ราษฎร'" },
-            "รื่นรมณ์": { correct: "รื่นรมย์", reason: "ใช้ ย ยักษ์ การันต์ เขียนว่า 'รื่นรมย์'" },
-            "ลักขะโมย": { correct: "ลักขโมย", reason: "เขียนลดรูปเป็น 'ลักขโมย'" },
-            "ลำใย": { correct: "ลำไย", reason: "ชื่อผลไม้ 'ลำไย' ใช้ไม้มลาย (ไ) ไม่ใช่ไม้ม้วน" },
-            "วิจาร": { correct: "วิจารณ์", reason: "มี ณ์ การันต์ เขียนว่า 'วิจารณ์'" },
-            "สังสรร": { correct: "สังสรรค์", reason: "มี ค์ การันต์ เขียนว่า 'สังสรรค์'" },
-            "สถานะการณ์": { correct: "สถานการณ์", reason: "คำสมาสไม่มีสระอะ เขียนว่า 'สถานการณ์'" },
-            "หลงไหล": { correct: "หลงใหล", reason: "คำว่า 'หลงใหล' (คลั่งไคล้) ใช้ไม้ม้วน (ใ) (คำว่า 'ไหล' ไม้มลายใช้กับน้ำไหล)" },
-            "คลั่งไคล": { correct: "คลั่งไคล้", reason: "มีไม้โท เขียนว่า 'คลั่งไคล้'" },
-            "อนุรักษ": { correct: "อนุรักษ์", reason: "มี ษ์ การันต์ เขียนว่า 'อนุรักษ์'" },
-            "อเนกประสงค์": { correct: "อเนกประสงค์", reason: "ถูกต้อง" },
-            "เอนกประสงค์": { correct: "อเนกประสงค์", reason: "คำว่า 'อเนก' เขียนด้วย อ อ่าง ไม่ใช่ สระเอ" },
-            "อัธยาสัย": { correct: "อัธยาศัย", reason: "ใช้ ศ ศาลา เขียนว่า 'อัธยาศัย'" },
-            "อัธยาศรัย": { correct: "อัธยาศัย", reason: "ไม่มี ร เรือ ควบกล้ำ เขียนว่า 'อัธยาศัย'" },
-            "อับยศ": { correct: "อัปยศ", reason: "ใช้ ป ปลา สะกด เขียนว่า 'อัปยศ'" },
-            "อานิสงค์": { correct: "อานิสงส์", reason: "ใช้ ส์ การันต์ เขียนว่า 'อานิสงส์'" },
-            "อารมย์": { correct: "อารมณ์", reason: "ใช้ ณ เณร การันต์ เขียนว่า 'อารมณ์'" },
-            "อาวุธยุทธปกรณ์": { correct: "อาวุธยุทโธปกรณ์", reason: "เขียนว่า 'อาวุธยุทโธปกรณ์'" },
-            "อิสสระ": { correct: "อิสระ", reason: "ใช้ ส เสือ ตัวเดียว เขียนว่า 'อิสระ'" },
-            "อุดมการ": { correct: "อุดมการณ์", reason: "มี ณ์ การันต์ เขียนว่า 'อุดมการณ์'" },
-            "อุปสรรค์": { correct: "อุปสรรค", reason: "ไม่มีตัวการันต์ เขียนว่า 'อุปสรรค'" },
-            "เอกลักษ์": { correct: "เอกลักษณ์", reason: "ใช้ ณ์ การันต์ เขียนว่า 'เอกลักษณ์'" },
-            "โอวาส": { correct: "โอวาท", reason: "สะกดด้วย ท ทหาร เขียนว่า 'โอวาท'" },
-            "ฮัลโลวีน": { correct: "ฮาโลวีน", reason: "ราชบัณฑิตยฯ กำหนดให้เขียน 'ฮาโลวีน'" }
+        const OFFLINE_MISSPELLINGS = {
+            "อณุญาต": { correct: "อนุญาต", category: "สะกดผิด", group: "spelling", reason: "คำว่า 'อนุญาต' เขียนด้วย น หนู และไม่มีสระอิที่ ต เต่า" },
+            "อณุญาติ": { correct: "อนุญาต", category: "สะกดผิด", group: "spelling", reason: "คำว่า 'อนุญาต' ใช้ น หนู และไม่มีสระอิที่ ต เต่า (คำที่มีสระอิคือ 'ญาติพี่น้อง')" },
+            "อนุญาติ": { correct: "อนุญาต", category: "สะกดผิด", group: "spelling", reason: "คำว่า 'อนุญาต' (การยินยอม) ไม่มีสระอิที่ ต เต่า" },
+            "กฏหมาย": { correct: "กฎหมาย", category: "สะกดผิด", group: "spelling", reason: "คำว่า 'กฎหมาย' ใช้ ฎ ชฎา (หยักเดียว) ไม่ใช่ ฏ ปฏัก" },
+            "กฏระเบียบ": { correct: "กฎระเบียบ", category: "สะกดผิด", group: "spelling", reason: "คำว่า 'กฎระเบียบ' ใช้ ฎ ชฎา (หยักเดียว)" },
+            "กฏกระทรวง": { correct: "กฎกระทรวง", category: "สะกดผิด", group: "spelling", reason: "คำว่า 'กฎกระทรวง' ใช้ ฎ ชฎา (หยักเดียว)" },
+            "กฏ": { correct: "กฎ", category: "สะกดผิด", group: "spelling", reason: "คำว่า 'กฎ' ใช้ ฎ ชฎา (หยักเดียว)" },
+            "สังเกตุ": { correct: "สังเกต", category: "สะกดผิด", group: "spelling", reason: "คำว่า 'สังเกต' ไม่มีสระอุที่ ต เต่า" },
+            "ปรากฎ": { correct: "ปรากฏ", category: "สะกดผิด", group: "spelling", reason: "คำว่า 'ปรากฏ' ใช้ ฏ ปฏัก (สองหยัก) ไม่ใช่ ฎ ชฎา" },
+            "ปรากฎการณ์": { correct: "ปรากฏการณ์", category: "สะกดผิด", group: "spelling", reason: "คำว่า 'ปรากฏ' ใช้ ฏ ปฏัก (สองหยัก)" },
+            "โอกาศ": { correct: "โอกาส", category: "สะกดผิด", group: "spelling", reason: "คำว่า 'โอกาส' สะกดด้วย ส เสือ ไม่ใช่ ศ ศาลา" },
+            "ศรีษะ": { correct: "ศีรษะ", category: "สะกดผิด", group: "spelling", reason: "คำว่า 'ศีรษะ' สระอีอยู่บน ศ ศาลา" },
+            "เซ็นต์": { correct: "เซ็น", category: "ตัวการันต์ผิด", group: "spelling", reason: "คำว่า 'เซ็น' (ลงนาม) ไม่มี ต์ การันต์ (คำว่า 'เซ็นต์' ใช้กับหน่วยเงิน)" },
+            "เซ็นต์ชื่อ": { correct: "เซ็นชื่อ", category: "ตัวการันต์ผิด", group: "spelling", reason: "คำว่า 'เซ็นชื่อ' ไม่มี ต์ การันต์" },
+            "ลายเซ็นต์": { correct: "ลายเซ็น", category: "ตัวการันต์ผิด", group: "spelling", reason: "คำว่า 'ลายเซ็น' ไม่มี ต์ การันต์" },
+            "สัปห์ดา": { correct: "สัปดาห์", category: "ตัวการันต์ผิด", group: "spelling", reason: "ตัวการันต์อยู่ที่ ห หีบ และ ด ชฎา (สัปดาห์)" },
+            "ปราณีต": { correct: "ประณีต", category: "สะกดผิด", group: "spelling", reason: "คำว่า 'ประณีต' ใช้สระอะ (ประ-) ไม่ใช่สระอา" },
+            "กระเพรา": { correct: "กะเพรา", category: "สะกดผิด", group: "spelling", reason: "ชื่อพืช 'กะเพรา' ไม่มี ร เรือ ควบกล้ำ" },
+            "กระทันหัน": { correct: "กะทันหัน", category: "สะกดผิด", group: "spelling", reason: "คำว่า 'กะทันหัน' ไม่มี ร เรือ ที่พยางค์แรก" },
+            "ผัดไท": { correct: "ผัดไทย", category: "พิมพ์ตก", group: "spelling", reason: "ชื่ออาหารเขียนว่า 'ผัดไทย' (มี ย ยักษ์)" },
+            "รสชาด": { correct: "รสชาติ", category: "สะกดผิด", group: "spelling", reason: "คำว่า 'รสชาติ' สะกดด้วย ติ ไม่ใช่ ด เด็ก" },
+            "อัพเดท": { correct: "อัปเดต", category: "สะกดผิด", group: "spelling", reason: "คำทับศัพท์ update ราชบัณฑิตยฯ กำหนดให้เขียน 'อัปเดต'" },
+            "เว็ปไซต์": { correct: "เว็บไซต์", category: "สะกดผิด", group: "spelling", reason: "คำทับศัพท์ website ใช้ บ ใบไม้ เขียนว่า 'เว็บไซต์'" },
+            "เวบ": { correct: "เว็บ", category: "สะกดผิด", group: "spelling", reason: "คำทับศัพท์ web เขียนว่า 'เว็บ'" },
+            "อีเมล์": { correct: "อีเมล", category: "ตัวการันต์ผิด", group: "spelling", reason: "คำทับศัพท์ email ไม่มี ล์ การันต์ เขียนว่า 'อีเมล'" },
+            "อินเตอร์เน็ต": { correct: "อินเทอร์เน็ต", category: "สะกดผิด", group: "spelling", reason: "คำทับศัพท์ internet ราชบัณฑิตยฯ กำหนดให้เขียน 'อินเทอร์เน็ต'" },
+            "เกษียรอายุ": { correct: "เกษียณอายุ", category: "สะกดผิด", group: "spelling", reason: "ครบกำหนดอายุราชการ ใช้ ณ เณร เขียนว่า 'เกษียณอายุ'" },
+            "คำนวน": { correct: "คำนวณ", category: "สะกดผิด", group: "spelling", reason: "สะกดด้วย ณ เณร เขียนว่า 'คำนวณ'" },
+            "งบประมาน": { correct: "งบประมาณ", category: "สะกดผิด", group: "spelling", reason: "คำว่า 'ประมาณ' สะกดด้วย ณ เณร" },
+            "เจตนารมย์": { correct: "เจตนารมณ์", category: "ตัวการันต์ผิด", group: "spelling", reason: "คำว่า 'เจตนารมณ์' ใช้ ณ เณร การันต์" },
+            "บรรเทิง": { correct: "บันเทิง", category: "สะกดผิด", group: "spelling", reason: "คำว่า 'บันเทิง' ใช้ บัน ไม่ใช่ บรร" },
+            "บรรทึก": { correct: "บันทึก", category: "สะกดผิด", group: "spelling", reason: "คำว่า 'บันทึก' ใช้ บัน ไม่ใช่ บรร" },
+            "บันยากาศ": { correct: "บรรยากาศ", category: "สะกดผิด", group: "spelling", reason: "คำว่า 'บรรยากาศ' ใช้ บรร (ร หัน)" },
+            "ปาฏิหารย์": { correct: "ปาฏิหาริย์", category: "พิมพ์ตก", group: "spelling", reason: "มีสระอิที่ ร เรือ เขียนว่า 'ปาฏิหาริย์'" },
+            "ปฎิบัติ": { correct: "ปฏิบัติ", category: "สะกดผิด", group: "spelling", reason: "คำว่า 'ปฏิบัติ' ใช้ ฏ ปฏัก (สองหยัก)" },
+            "ปฎิเสธ": { correct: "ปฏิเสธ", category: "สะกดผิด", group: "spelling", reason: "คำว่า 'ปฏิเสธ' ใช้ ฏ ปฏัก (สองหยัก)" },
+            "ผูกพันธ์": { correct: "ผูกพัน", category: "ตัวการันต์ผิด", group: "spelling", reason: "คำว่า 'ผูกพัน' ไม่มี ธ ธง การันต์" },
+            "พัศดุ": { correct: "พัสดุ", category: "สะกดผิด", group: "spelling", reason: "คำว่า 'พัสดุ' ใช้ ส เสือ ไม่ใช่ ศ ศาลา" },
+            "พิจรณา": { correct: "พิจารณา", category: "พิมพ์ตก", group: "spelling", reason: "มีสระอาที่ จ จาน เขียนว่า 'พิจารณา'" },
+            "มาตราฐาน": { correct: "มาตรฐาน", category: "พิมพ์เกิน", group: "spelling", reason: "คำว่า 'มาตรฐาน' ไม่มีสระอาหลัง ตร" },
+            "ราษฏร": { correct: "ราษฎร", category: "สะกดผิด", group: "spelling", reason: "ใช้ ฎ ชฎา (หยักเดียว) เขียนว่า 'ราษฎร'" },
+            "รื่นรมณ์": { correct: "รื่นรมย์", category: "ตัวการันต์ผิด", group: "spelling", reason: "ใช้ ย ยักษ์ การันต์ เขียนว่า 'รื่นรมย์'" },
+            "ลำใย": { correct: "ลำไย", category: "สะกดผิด", group: "spelling", reason: "ชื่อผลไม้ 'ลำไย' ใช้ไม้มลาย (ไ)" },
+            "สถานะการณ์": { correct: "สถานการณ์", category: "พิมพ์เกิน", group: "spelling", reason: "คำสมาสไม่มีสระอะ เขียนว่า 'สถานการณ์'" },
+            "หลงไหล": { correct: "หลงใหล", category: "สะกดผิด", group: "spelling", reason: "คำว่า 'หลงใหล' ใช้ไม้ม้วน (ใ)" },
+            "อานิสงค์": { correct: "อานิสงส์", category: "ตัวการันต์ผิด", group: "spelling", reason: "ใช้ ส์ การันต์ เขียนว่า 'อานิสงส์'" },
+            "อารมย์": { correct: "อารมณ์", category: "ตัวการันต์ผิด", group: "spelling", reason: "ใช้ ณ เณร การันต์ เขียนว่า 'อารมณ์'" },
+            "อุปสรรค์": { correct: "อุปสรรค", category: "ตัวการันต์ผิด", group: "spelling", reason: "ไม่มีตัวการันต์ เขียนว่า 'อุปสรรค'" },
+            "ทำงา": { correct: "ทำงาน", category: "พิมพ์ตก", group: "spelling", reason: "พิมพ์ตัวสะกด 'น' ตกหล่น คำที่ถูกต้องตามบริบทคือ 'ทำงาน'" },
+            "กาวางแผง": { correct: "การวางแผน", category: "พิมพ์ตก/พิมพ์ผิด", group: "spelling", reason: "พิมพ์ตกตัวสะกด 'ร' ในคำว่า 'การ' และพิมพ์ 'แผน' ผิดเป็น 'แผง'" },
+            "นะค่ะ": { correct: "นะคะ", category: "ใส่วรรณยุกต์ผิด", group: "spelling", reason: "คำลงท้าย 'นะคะ' ออกเสียงตรี ไม่มีไม้เอก (คำว่า 'ค่ะ' ใช้กับคำตอบรับหรือ 'ขอบคุณค่ะ')" }
         };
 
-        // กรองเฉพาะคำที่สะกดผิดจริง (ค่าของ correct ไม่เท่ากับ key)
-        const ERROR_DICT = {};
-        const VALID_WORDS_FROM_MAP = new Set();
-        for (const [key, val] of Object.entries(COMMON_MISSPELLINGS)) {
-            VALID_WORDS_FROM_MAP.add(val.correct);
-            if (key !== val.correct) {
-                ERROR_DICT[key] = val;
-            }
-        }
-
         // ============================================================================
-        // 2. พจนานุกรมคำศัพท์ภาษาไทยพื้นฐาน + ศัพท์เฉพาะทางราชการ/ตำรวจ
+        // 2. State และตัวแปรจัดการระบบ
         // ============================================================================
-        const OFFICIAL_AND_COMMON_WORDS = new Set([
-            ...VALID_WORDS_FROM_MAP,
-            "คำสั่ง", "ฝ่าย", "ปกครอง", "และ", "การ", "ฝึก", "ศูนย์", "อบรม", "ตำรวจ", "ภูธร", "ภาค",
-            "ที่", "เรื่อง", "แต่งตั้ง", "คณะ", "กรรมการ", "สอบสวน", "หา", "ข้อเท็จจริง", "ตาม", "หนังสือ",
-            "อำนวยการ", "ผู้กำกับการ", "สารวัตร", "บังคับบัญชา", "ประสานงาน", "ปราจีนบุรี", "สวัสดีครับ", "สวัสดีค่ะ",
-            "สัปดาห์", "วันพุธ", "พฤหัสบดี", "ลง", "กันยายน", "อ้างถึง", "สิงหาคม", "ขอ", "อนุมัติ", "จำหน่าย",
-            "เครื่อง", "รับ", "ส่ง", "วิทยุ", "สื่อสาร", "ชนิด", "มือถือ", "โดย", "แจ้ง", "ให้", "ดำเนินการ", "ว่า",
-            "พัสดุ", "รายการ", "มี", "เสื่อม", "สภาพ", "อายุ", "ใช้", "งาน", "ปกติ", "หรือ", "ไม่", "รายงาน", "ผล",
-            "ผู้", "บังคับ", "ทราบ", "เพื่อ", "พิจารณา", "สั่ง", "ต่อ", "ไป", "นั้น", "เป็น", "ด้วย", "ความ", "เรียบร้อย",
-            "อาศัย", "อำนาจ", "ระเบียบ", "สำนัก", "นายกรัฐมนตรี", "ว่าด้วย", "แก้ไข", "เพิ่มเติม", "จึง", "มอบหมาย",
-            "ข้าราชการ", "ดังนี้", "พัน", "โท", "เอก", "ตรี", "จัตวา", "ร้อย", "ดาบ", "จ่า", "สิบ", "พล",
-            "สมศักดิ์", "คำเผือก", "ประธาน", "เลขานุการ", "ผู้ช่วย", "ตรวจสอบ", "ข้อ", "เท็จจริง", "แล้ว", "เสนอ",
-            "ทั้งนี้", "ตั้งแต่", "บัดนี้", "เป็นต้นไป", "ณ", "วันที่", "พ.ศ.", "ค.ศ.", "ร.ต.อ.", "พ.ต.ท.",
-            "พ.ต.อ.", "พล.ต.ต.", "พล.ต.ท.", "พล.ต.อ.", "ด.ต.", "ส.ต.อ.", "ส.ต.ท.", "ส.ต.ต.",
-            "ใน", "ของ", "จะ", "ได้", "กับ", "แก่", "แด่", "จาก", "ถึง", "จน", "เมื่อ", "หาก", "ถ้า", "เพราะ",
-            "เนื่องจาก", "ซึ่ง", "อัน", "อย่าง", "มาก", "น้อย", "ดี", "มิ", "เคย", "กำลัง", "อยู่", "เสร็จ",
-            "สิ้น", "ครบ", "ถ้วน", "ถูก", "ต้อง", "ผิด", "พลาด", "ชัดเจน", "ละเอียด", "รอบคอบ", "เหมาะสม", "สมควร",
-            "จำเป็น", "สำคัญ", "เร่งด่วน", "ด่วน", "ที่สุด", "ลับ", "เฉพาะ", "ส่วน", "ตัว", "กลาง", "รวม", "ทั้งหมด",
-            "ทุก", "บาง", "หลาย", "ต่าง", "ๆ", "ฯลฯ", "ฯ", "ปี", "เดือน", "วัน", "เวลา", "นาฬิกา",
-            "มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม",
-            "ตุลาคม", "พฤศจิกายน", "ธันวาคม", "จังหวัด", "อำเภอ", "ตำบล", "หมู่", "ถนน", "ซอย", "อาคาร",
-            "ชั้น", "ห้อง", "เลขที่", "รหัส", "ไปรษณีย์", "โทรศัพท์", "โทรสาร", "จดหมาย", "อิเล็กทรอนิกส์",
-            "บันทึก", "ข้อความ", "ประกาศ", "แถลงการณ์", "ข้อบังคับ", "พระราชบัญญัติ", "พระราชกฤษฎีกา",
-            "กฎกระทรวง", "มติ", "คณะรัฐมนตรี", "กระทรวง", "ทบวง", "กรม", "กอง", "แผนก", "โครงการ",
-            "งบประมาณ", "การเงิน", "บัญชี", "จัดซื้อ", "จัดจ้าง", "บริหาร", "จัดการ", "พัฒนา", "ส่งเสริม",
-            "สนับสนุน", "ควบคุม", "กำกับ", "ดูแล", "ติดตาม", "ประเมินผล", "สรุป", "วิเคราะห์", "วิจัย", "ศึกษา",
-            "สัมมนา", "ประชุม", "หารือ", "ชี้แจง", "ทำความเข้าใจ", "ร่วมมือ", "ช่วยเหลือ", "บริการ",
-            "ประชาชน", "สังคม", "ประเทศ", "ชาติ", "ศาสนา", "พระมหากษัตริย์", "รัฐธรรมนูญ", "ยุติธรรม",
-            "ศาล", "อัยการ", "ทนายความ", "พยาน", "หลักฐาน", "เอกสาร", "สำเนา", "ถูกต้อง", "ลงชื่อ", "ตำแหน่ง",
-            "รักษาการ", "แทน", "ปฏิบัติราชการ", "หัวหน้า", "รอง", "ผู้อำนวยการ", "อธิบดี", "ปลัด", "รัฐมนตรี",
-            "เลขาธิการ", "ผู้ว่าราชการ", "นายอำเภอ", "กำนัน", "ผู้ใหญ่บ้าน", "เทศบาล", "องค์การ", "ส่วนจังหวัด",
-            "ส่วนตำบล", "ผม", "ดิฉัน", "ข้าพเจ้า", "ท่าน", "คุณ", "เรา", "เขา", "มัน", "นี่", "นั่น", "โน่น",
-            "นี้", "โน้น", "ใคร", "อะไร", "ที่ไหน", "เมื่อไร", "อย่างไร", "ทำไม", "เท่าไร", "กี่", "คน",
-            "อัน", "สิ่ง", "เรื่อง", "แห่ง", "ด้าน", "ทาง", "สาย", "ชุด", "ใบ", "ฉบับ", "แผ่น", "เล่ม",
-            "คัน", "หลัง", "บาท", "สตางค์", "หมื่น", "แสน", "ล้าน", "หนึ่ง", "สอง", "สาม", "สี่", "ห้า",
-            "หก", "เจ็ด", "แปด", "เก้า", "ยี่สิบ", "เอ็ด", "ไป", "มา", "เข้า", "ออก", "ขึ้น", "ลง", "ยืน",
-            "เดิน", "นั่ง", "นอน", "กิน", "ดื่ม", "พูด", "คุย", "บอก", "กล่าว", "ถาม", "ตอบ", "อ่าน", "เขียน",
-            "พิมพ์", "วาง", "ตรวจ", "แก้", "คัดลอก", "ดาวน์โหลด", "ค้นหา", "แสดง", "ซ่อน", "เปิด", "ปิด",
-            "เริ่ม", "หยุด", "พัก", "รอ", "คอย", "พบ", "เจอ", "เห็น", "ดู", "มอง", "ฟัง", "ได้ยิน", "คิด",
-            "รู้", "เข้าใจ", "จำ", "ลืม", "รัก", "ชอบ", "เกลียด", "โกรธ", "กลัว", "ดีใจ", "เสียใจ", "กังวล",
-            "สงสัย", "มั่นใจ", "ภูมิใจ", "ขอแสดงความนับถือ", "ขอแสดงความนับถืออย่างยิ่ง", "เรียน", "กราบเรียน",
-            "นมัสการ", "เจริญพร", "วัตถุประสงค์", "เป้าหมาย", "ระยะ", "สถานที่", "ผู้รับผิดชอบ", "คาด",
-            "ได้รับ", "ลงนาม", "ประทับตรา", "คลัง", "จัดซื้อจัดจ้าง", "บริหารงาน", "รัฐ", "ปีงบประมาณ",
-            "ไตรมาส", "ครุภัณฑ์", "วัสดุ", "ซ่อมบำรุง", "สูญหาย", "ชำรุด", "ตามระเบียบ", "ข้อกำหนด", "เงื่อนไข"
-        ]);
-
-        // ============================================================================
-        // 3. State และตัวแปรจัดการระบบ
-        // ============================================================================
-        let analyzedTokens = [];
-        let activeTokenIndex = null;
+        let currentIssues = []; // เก็บรายการจุดผิดทั้งหมด: { id, original, correct, category, group, reason, index, fixed }
+        let activeIssueId = null;
+        let activeFilterGroup = 'all';
         let currentUploadedFileName = '';
-        let customDictionary = new Set(JSON.parse(localStorage.getItem('thaiSpell_customDict') || '[]'));
-        let checkHistory = JSON.parse(localStorage.getItem('thaiSpell_history') || '[]');
+        let isAnalyzing = false;
+
+        let customDictionary = new Set(JSON.parse(localStorage.getItem('thaiSpellPro_customDict') || '[]'));
+        let checkHistory = JSON.parse(localStorage.getItem('thaiSpellPro_history') || '[]');
 
         const inputTextEl = document.getElementById('inputText');
         const resultDisplayEl = document.getElementById('resultDisplay');
         const charCountEl = document.getElementById('charCount');
-        const errorCountDisplayEl = document.getElementById('errorCountDisplay');
-        const unknownCountDisplayEl = document.getElementById('unknownCountDisplay');
         const customDictCountEl = document.getElementById('customDictCount');
         const statusBannerEl = document.getElementById('statusBanner');
         const wordPopoverEl = document.getElementById('wordPopover');
@@ -673,14 +520,14 @@
             });
 
             document.addEventListener('click', (e) => {
-                if (!wordPopoverEl.contains(e.target) && !e.target.classList.contains('word-error') && !e.target.classList.contains('word-unknown')) {
+                if (!wordPopoverEl.contains(e.target) && !e.target.closest('[data-issue-id]')) {
                     closePopover();
                 }
             });
         });
 
         // ============================================================================
-        // 4. ระบบอัปโหลดและอ่านไฟล์จริง: Word (.docx), Excel (.xlsx/.xls/.csv), PDF (.pdf), TXT
+        // 3. ระบบอัปโหลดและอ่านไฟล์จริง: Word (.docx), Excel (.xlsx/.xls/.csv), PDF (.pdf), TXT
         // ============================================================================
         function setupDragAndDrop() {
             ['dragenter', 'dragover'].forEach(evtName => {
@@ -719,29 +566,23 @@
             const ext = fileName.split('.').pop().toLowerCase();
             currentUploadedFileName = fileName.replace(/\.[^/.]+$/, '');
 
-            updateStatusBanner(`กำลังอ่านข้อมูลจากไฟล์ "${fileName}" กรุณารอสักครู่...`, 'neutral');
+            updateStatusBanner(`กำลังอ่านข้อมูลจากไฟล์ "${fileName}" กรุณารอสักครู่...`, 'loading');
 
             try {
                 let extractedText = '';
                 let metaInfo = '';
-                let iconColor = 'bg-blue-600';
+                let iconColor = 'bg-blue-700';
 
                 if (ext === 'docx') {
-                    // อ่านไฟล์ Word (.docx) ด้วย Mammoth.js
-                    if (typeof mammoth === 'undefined') {
-                        throw new Error('ไลบรารีอ่านไฟล์ Word ยังโหลดไม่เสร็จ กรุณาลองใหม่อีกครั้ง');
-                    }
+                    if (typeof mammoth === 'undefined') throw new Error('ไลบรารีอ่านไฟล์ Word ยังโหลดไม่เสร็จ');
                     const arrayBuffer = await file.arrayBuffer();
-                    const result = await mammoth.extractRawText({ arrayBuffer: arrayBuffer });
+                    const result = await mammoth.extractRawText({ arrayBuffer });
                     extractedText = result.value;
                     metaInfo = `ไฟล์ Microsoft Word (.docx) • ขนาด ${(file.size / 1024).toFixed(1)} KB`;
-                    iconColor = 'bg-blue-600';
+                    iconColor = 'bg-blue-700';
 
                 } else if (['xlsx', 'xls', 'csv'].includes(ext)) {
-                    // อ่านไฟล์ Excel / CSV ด้วย SheetJS (XLSX)
-                    if (typeof XLSX === 'undefined') {
-                        throw new Error('ไลบรารีอ่านไฟล์ Excel ยังโหลดไม่เสร็จ กรุณาลองใหม่อีกครั้ง');
-                    }
+                    if (typeof XLSX === 'undefined') throw new Error('ไลบรารีอ่านไฟล์ Excel ยังโหลดไม่เสร็จ');
                     const arrayBuffer = await file.arrayBuffer();
                     const workbook = XLSX.read(arrayBuffer, { type: 'array' });
                     const sheetNames = workbook.SheetNames;
@@ -753,7 +594,6 @@
                         const cleanedRows = rows
                             .map(row => row.map(cell => String(cell).trim()).filter(Boolean).join('  '))
                             .filter(line => line.trim().length > 0);
-
                         if (cleanedRows.length > 0) {
                             sheetTexts.push(`--- ชีต: ${sheetName} ---\n` + cleanedRows.join('\n'));
                         }
@@ -764,10 +604,7 @@
                     iconColor = 'bg-emerald-600';
 
                 } else if (ext === 'pdf') {
-                    // อ่านไฟล์ PDF ด้วย PDF.js ทุกหน้า
-                    if (typeof pdfjsLib === 'undefined') {
-                        throw new Error('ไลบรารีอ่านไฟล์ PDF ยังโหลดไม่เสร็จ กรุณาลองใหม่อีกครั้ง');
-                    }
+                    if (typeof pdfjsLib === 'undefined') throw new Error('ไลบรารีอ่านไฟล์ PDF ยังโหลดไม่เสร็จ');
                     const arrayBuffer = await file.arrayBuffer();
                     const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
                     const pageTexts = [];
@@ -775,7 +612,6 @@
                     for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
                         const page = await pdf.getPage(pageNum);
                         const textContent = await page.getTextContent();
-                        // จัดเรียงข้อความตามบรรทัด (พิกัดแกน Y)
                         let lastY = null;
                         let pageStr = '';
                         for (const item of textContent.items) {
@@ -788,9 +624,7 @@
                             pageStr += item.str;
                             lastY = currentY;
                         }
-                        if (pageStr.trim()) {
-                            pageTexts.push(pageStr.trim());
-                        }
+                        if (pageStr.trim()) pageTexts.push(pageStr.trim());
                     }
 
                     extractedText = pageTexts.join('\n\n');
@@ -807,26 +641,23 @@
                     return;
                 }
 
-                // ทำความสะอาดอักขระภาษาไทยที่มักเพี้ยนจากการคัดลอก PDF (เช่น สระอำแยกส่วน หรืออักขระซ่อนเร้น)
                 extractedText = normalizeThaiTextFromFile(extractedText);
 
                 if (!extractedText.trim()) {
-                    showToast('ไม่พบข้อความในไฟล์นี้ (หากเป็น PDF แบบสแกนรูปภาพ จะไม่สามารถดึงข้อความได้)', 'warning');
-                    updateStatusBanner('ไม่พบข้อความตัวอักษรในไฟล์ (อาจเป็นไฟล์ภาพสแกน)', 'warning');
+                    showToast('ไม่พบข้อความตัวอักษรในไฟล์นี้ (หากเป็น PDF แบบภาพสแกนจะไม่สามารถดึงข้อความได้)', 'warning');
+                    updateStatusBanner('ไม่พบข้อความตัวอักษรในไฟล์', 'warning');
                     return;
                 }
 
-                // แสดงแถบข้อมูลไฟล์ที่อัปโหลด
                 document.getElementById('fileInfoBar').classList.remove('hidden');
                 document.getElementById('fileTypeIcon').className = `w-9 h-9 rounded-xl ${iconColor} text-white flex items-center justify-center shrink-0`;
                 document.getElementById('fileNameDisplay').textContent = fileName;
                 document.getElementById('fileMetaDisplay').textContent = metaInfo;
                 lucide.createIcons();
 
-                // นำข้อความเข้าช่องตรวจและรันระบบตรวจคำผิดทันที
                 inputTextEl.value = extractedText;
-                runSpellCheck();
-                showToast(`อ่านไฟล์ "${fileName}" และตรวจคำผิดเรียบร้อยแล้ว`, 'success');
+                charCountEl.textContent = `${extractedText.length.toLocaleString()} ตัวอักษร`;
+                await runFullAnalysis();
 
             } catch (error) {
                 console.error('File parsing error:', error);
@@ -841,286 +672,537 @@
             currentUploadedFileName = '';
         }
 
-        // ทำความสะอาดอักขระภาษาไทยจากไฟล์ PDF / Word ที่มักเรียงสระเพี้ยน
         function normalizeThaiTextFromFile(text) {
             return text
-                // แก้นิคหิต + สระอา (ํ + า) ที่ PDF ชอบแยกออกจากสระอำ (ำ)
                 .replace(/\u0E4D\u0E32/g, '\u0E33')
                 .replace(/\u0E4D([\u0E48-\u0E4B])\u0E32/g, '$1\u0E33')
-                // ลบ Zero-width space และอักขระควบคุมที่มองไม่เห็น
                 .replace(/[\u200B-\u200D\uFEFF]/g, '')
-                // จัดระเบียบช่องว่างซ้ำซ้อนเกินจำเป็นในบรรทัดเดียวกัน
                 .replace(/[ \t]{3,}/g, '  ');
         }
 
         // ============================================================================
-        // 5. กลไกการตัดคำภาษาไทย + ตรวจจับรูปแบบคำผิดอัตโนมัติ (Pattern & Heuristic Rules)
+        // 4. ระบบวิเคราะห์แบบ Hybrid: Offline Pre-scan + Gemini AI Deep Proofreading
         // ============================================================================
-        function segmentThaiText(text) {
-            if (typeof Intl !== 'undefined' && Intl.Segmenter) {
-                const segmenter = new Intl.Segmenter('th', { granularity: 'word' });
-                const rawSegments = Array.from(segmenter.segment(text));
-
-                const mergedSegments = [];
-                let i = 0;
-                while (i < rawSegments.length) {
-                    const curr = rawSegments[i].segment;
-                    const next = i + 1 < rawSegments.length ? rawSegments[i + 1].segment : '';
-                    const next2 = i + 2 < rawSegments.length ? rawSegments[i + 2].segment : '';
-                    const combined2 = curr + next;
-                    const combined3 = curr + next + next2;
-
-                    if (ERROR_DICT[combined3] || OFFICIAL_AND_COMMON_WORDS.has(combined3)) {
-                        mergedSegments.push(combined3);
-                        i += 3;
-                    } else if (ERROR_DICT[combined2] || OFFICIAL_AND_COMMON_WORDS.has(combined2) || customDictionary.has(combined2)) {
-                        mergedSegments.push(combined2);
-                        i += 2;
-                    } else {
-                        mergedSegments.push(curr);
-                        i += 1;
-                    }
-                }
-                return mergedSegments;
-            } else {
-                return text.split(/(\s+|[.,/#!$%^&*;:{}=\-_`~()]+)/);
-            }
-        }
-
-        function isThaiWord(word) {
-            return /^[\u0E00-\u0E7F]+$/.test(word) && !/^[๐-๙]+$/.test(word) && word !== 'ๆ' && word !== 'ฯ' && word !== 'ฯลฯ';
-        }
-
-        // กฎตรวจจับรูปแบบคำผิดอัตโนมัติ (Heuristic & Pattern Checks)
-        function detectPatternError(word) {
-            // 1. สระเอซ้อน 2 ตัว (เเ) แทนสระแอ (แ)
-            if (word.includes('เเ')) {
-                return {
-                    correct: word.replace(/เเ/g, 'แ'),
-                    reason: 'พิมพ์สระเอ (เ) ซ้อนกัน 2 ตัว แทนที่จะใช้สระแอ (แ)'
-                };
-            }
-            // 2. วรรณยุกต์ซ้อนติดกัน 2 ตัว (เช่น ่้ หรือ ้่)
-            if (/[\u0E48-\u0E4B]{2,}/.test(word)) {
-                return {
-                    correct: word.replace(/([\u0E48-\u0E4B])[\u0E48-\u0E4B]+/g, '$1'),
-                    reason: 'พบวรรณยุกต์พิมพ์ซ้อนกัน 2 ตัวในคำเดียวกัน'
-                };
-            }
-            // 3. สระบน/ล่างซ้อนกันผิดหลักการสะกด
-            if (/[\u0E31\u0E34-\u0E3A\u0E47]{2,}/.test(word)) {
-                return {
-                    correct: word.replace(/([\u0E31\u0E34-\u0E3A\u0E47])\1+/g, '$1'),
-                    reason: 'พบสระบนหรือสระล่างพิมพ์ซ้อนกันผิดตำแหน่ง'
-                };
-            }
-            // 4. คำที่ขึ้นต้นด้วย ปฎิ- (ใช้ ฎ ชฎา ผิด ควรเป็น ปฏิ- ฏ ปฏัก)
-            if (word.startsWith('ปฎิ')) {
-                return {
-                    correct: 'ปฏิ' + word.slice(3),
-                    reason: 'คำกลุ่ม "ปฏิ-" (เช่น ปฏิบัติ, ปฏิเสธ, ปฏิรูป) ใช้ ฏ ปฏัก (สองหยัก) ไม่ใช่ ฎ ชฎา'
-                };
-            }
-            // 5. คำที่ขึ้นต้นด้วย กฏ- (ใช้ ฏ ปฏัก ผิด ควรเป็น กฎ- ฎ ชฎา)
-            if (word.startsWith('กฏ') && word !== 'กฏี') {
-                return {
-                    correct: 'กฎ' + word.slice(2),
-                    reason: 'คำกลุ่ม "กฎ-" (เช่น กฎหมาย, กฎระเบียบ, กฎเกณฑ์) ใช้ ฎ ชฎา (หยักเดียว) ไม่ใช่ ฏ ปฏัก'
-                };
-            }
-            return null;
-        }
-
-        // ============================================================================
-        // 6. ฟังก์ชันหลัก: ตรวจคำผิด (runSpellCheck)
-        // ============================================================================
-        function runSpellCheck() {
+        async function runFullAnalysis() {
+            if (isAnalyzing) return;
             closePopover();
-            const text = inputTextEl.value;
-            charCountEl.textContent = `${text.length.toLocaleString()} ตัวอักษร`;
 
-            if (!text.trim()) {
-                analyzedTokens = [];
-                resultDisplayEl.innerHTML = `
-                    <div class="h-44 flex flex-col items-center justify-center text-slate-400 text-center">
-                        <i data-lucide="file-search" class="w-10 h-10 mb-2 opacity-40"></i>
-                        <p class="text-sm">กรุณาอัปโหลดไฟล์ หรือพิมพ์/วางข้อความก่อนกดปุ่มตรวจคำผิด</p>
-                    </div>`;
-                lucide.createIcons();
-                updateSummaryCounts(0, 0);
-                updateStatusBanner('กรุณาอัปโหลดไฟล์ หรือพิมพ์ข้อความที่ต้องการตรวจสอบ', 'neutral');
+            const fullText = inputTextEl.value;
+            charCountEl.textContent = `${fullText.length.toLocaleString()} ตัวอักษร`;
+
+            if (!fullText.trim()) {
+                currentIssues = [];
+                renderAnalysisResult();
+                updateStatusBanner('กรุณาพิมพ์ วางข้อความ หรืออัปโหลดไฟล์ก่อนกดปุ่มตรวจคำผิด', 'neutral');
                 return;
             }
 
-            const checkUnknown = document.getElementById('checkUnknownToggle').checked;
-            const segments = segmentThaiText(text);
+            isAnalyzing = true;
+            setButtonLoading(true);
 
-            let errorCount = 0;
-            let unknownCount = 0;
+            // ขั้นที่ 1: รัน Offline Rule-based Pre-scan ทันทีเพื่อให้ผู้ใช้เห็นผลเบื้องต้นโดยไม่ต้องรอ
+            const offlineIssues = runOfflineRuleScanner(fullText);
+            currentIssues = offlineIssues;
+            renderAnalysisResult();
+            updateStatusBanner('กำลังใช้ Gemini AI วิเคราะห์เชิงลึกทั้ง 10 หมวดหมู่ (คำพิมพ์ตก/เกิน สันธาน วรรณยุกต์ เว้นวรรค ไวยากรณ์)...', 'loading');
 
-            analyzedTokens = segments.map((seg, idx) => {
-                // ตรวจจับการใช้ไม้ยมก (ๆ) ติดกับคำหน้าโดยไม่เว้นวรรค (ตามหลักราชบัณฑิตยฯ ต้องเว้นวรรคหน้าและหลังไม้ยมก)
-                if (seg === 'ๆ' && idx > 0 && isThaiWord(segments[idx - 1])) {
-                    errorCount++;
-                    return {
-                        text: 'ๆ',
-                        type: 'error',
-                        correct: ' ๆ',
-                        reason: 'ตามหลักเกณฑ์สำนักงานราชบัณฑิตยสภา การใช้เครื่องหมายไม้ยมก (ๆ) ต้องเว้นวรรค 1 เคาะข้างหน้าเสมอ (เช่น "ต่าง ๆ", "มาก ๆ")'
-                    };
-                }
+            try {
+                // แบ่งข้อความเป็น Chunk หากยาวเกิน 3,500 ตัวอักษร เพื่อความแม่นยำสูงสุด
+                const chunks = splitTextIntoChunks(fullText, 3500);
+                let allAiIssues = [];
 
-                if (!isThaiWord(seg)) {
-                    return { text: seg, type: 'normal' };
-                }
-
-                // 1. ตรวจสอบในฐานข้อมูลคำสะกดผิดจริง (สีแดง)
-                if (ERROR_DICT[seg]) {
-                    errorCount++;
-                    return {
-                        text: seg,
-                        type: 'error',
-                        correct: ERROR_DICT[seg].correct,
-                        reason: ERROR_DICT[seg].reason
-                    };
-                }
-
-                // 2. ตรวจสอบด้วยกฎรูปแบบคำผิดอัตโนมัติ (Pattern & Heuristic Rules)
-                const patternMatch = detectPatternError(seg);
-                if (patternMatch) {
-                    errorCount++;
-                    return {
-                        text: seg,
-                        type: 'error',
-                        correct: patternMatch.correct,
-                        reason: patternMatch.reason
-                    };
-                }
-
-                // 3. ตรวจสอบคำที่ไม่อยู่ในพจนานุกรม (สีส้ม - ถ้าเปิดใช้งาน)
-                if (checkUnknown) {
-                    const isKnown = OFFICIAL_AND_COMMON_WORDS.has(seg) ||
-                                    customDictionary.has(seg) ||
-                                    seg.length <= 2;
-
-                    if (!isKnown) {
-                        unknownCount++;
-                        return {
-                            text: seg,
-                            type: 'unknown',
-                            reason: 'คำนี้ไม่อยู่ในคลังพจนานุกรมหลักของระบบ อาจเป็นชื่อเฉพาะ ชื่อบุคคล สถานที่ หรือคำที่พิมพ์ตกหล่น'
-                        };
+                for (let cIdx = 0; cIdx < chunks.length; cIdx++) {
+                    const chunk = chunks[cIdx];
+                    if (chunks.length > 1) {
+                        updateStatusBanner(`กำลังวิเคราะห์ส่วนที่ ${cIdx + 1} จาก ${chunks.length} ส่วน ด้วย Gemini AI...`, 'loading');
                     }
+                    const chunkResults = await analyzeChunkWithGemini(chunk.text, chunk.offset, fullText);
+                    allAiIssues = allAiIssues.concat(chunkResults);
                 }
 
-                return { text: seg, type: 'normal' };
-            });
+                // รวมผลลัพธ์จาก AI เข้ากับ Offline Rule-based โดยตัดรายการที่ซ้ำซ้อนหรืออยู่ในพจนานุกรมส่วนตัวออก
+                const mergedIssues = mergeAndDeduplicateIssues(fullText, allAiIssues, offlineIssues);
+                currentIssues = mergedIssues;
+                renderAnalysisResult();
 
-            renderResultDisplay();
-            updateSummaryCounts(errorCount, unknownCount);
+                const activeCount = currentIssues.filter(i => !i.fixed).length;
+                if (activeCount === 0) {
+                    updateStatusBanner('ยอดเยี่ยม! ไม่พบคำสะกดผิด คำพิมพ์ตก การเว้นวรรค หรือข้อผิดพลาดทางไวยากรณ์', 'success');
+                    setEngineBadge('Gemini AI วิเคราะห์เสร็จสมบูรณ์', 'emerald');
+                } else {
+                    updateStatusBanner(`วิเคราะห์เสร็จสมบูรณ์! พบจุดควรแก้ไขทั้งหมด ${activeCount} จุด คลิกที่คำไฮไลต์เพื่อดูคำแนะนำ`, 'warning');
+                    setEngineBadge('Gemini AI วิเคราะห์เสร็จสมบูรณ์', 'emerald');
+                }
 
-            if (errorCount === 0 && unknownCount === 0) {
-                updateStatusBanner('ยอดเยี่ยม! ไม่พบคำสะกดผิดในเอกสารนี้ ถูกต้องตามหลักภาษา', 'success');
-            } else {
-                updateStatusBanner(`ตรวจเสร็จแล้ว พบคำสะกดผิด ${errorCount} จุด${unknownCount > 0 ? ` และคำควรตรวจสอบ ${unknownCount} จุด` : ''} (คลิกที่คำไฮไลต์เพื่อแก้ไข)`, 'warning');
+            } catch (error) {
+                console.warn('Gemini AI fallback to offline rules:', error);
+                // หากเครือข่ายขัดข้อง ใช้ผลจาก Offline Rule-based ที่รันไว้แล้วเป็น Fallback
+                const fallbackCount = currentIssues.filter(i => !i.fixed).length;
+                updateStatusBanner(`วิเคราะห์ด้วยระบบสำรองออฟไลน์เรียบร้อย (พบ ${fallbackCount} จุด) — หมายเหตุ: ระบบ AI ออนไลน์ขัดข้องชั่วคราว`, 'warning');
+                setEngineBadge('โหมดสำรองออฟไลน์', 'amber');
+            } finally {
+                isAnalyzing = false;
+                setButtonLoading(false);
             }
         }
 
-        function renderResultDisplay() {
-            const fragment = document.createDocumentFragment();
-
-            analyzedTokens.forEach((token, index) => {
-                if (token.type === 'error') {
-                    const span = document.createElement('span');
-                    span.className = 'word-error';
-                    span.textContent = token.text;
-                    span.title = `คำผิด: คลิกเพื่อแก้เป็น "${token.correct}"`;
-                    span.onclick = (e) => openWordPopover(e, index);
-                    fragment.appendChild(span);
-                } else if (token.type === 'unknown') {
-                    const span = document.createElement('span');
-                    span.className = 'word-unknown';
-                    span.textContent = token.text;
-                    span.title = 'ไม่อยู่ในพจนานุกรม: คลิกเพื่อดูตัวเลือก';
-                    span.onclick = (e) => openWordPopover(e, index);
-                    fragment.appendChild(span);
-                } else if (token.type === 'fixed') {
-                    const span = document.createElement('span');
-                    span.className = 'word-fixed';
-                    span.textContent = token.text;
-                    fragment.appendChild(span);
-                } else {
-                    fragment.appendChild(document.createTextNode(token.text));
+        // แบ่งข้อความยาวตามย่อหน้าเพื่อไม่ให้ตัดกลางคำ
+        function splitTextIntoChunks(text, maxLen) {
+            if (text.length <= maxLen) {
+                return [{ text, offset: 0 }];
+            }
+            const chunks = [];
+            let currentOffset = 0;
+            while (currentOffset < text.length) {
+                let end = Math.min(currentOffset + maxLen, text.length);
+                if (end < text.length) {
+                    const lastNewline = text.lastIndexOf('\n', end);
+                    const lastSpace = text.lastIndexOf(' ', end);
+                    if (lastNewline > currentOffset + maxLen * 0.6) {
+                        end = lastNewline + 1;
+                    } else if (lastSpace > currentOffset + maxLen * 0.6) {
+                        end = lastSpace + 1;
+                    }
                 }
+                chunks.push({
+                    text: text.slice(currentOffset, end),
+                    offset: currentOffset
+                });
+                currentOffset = end;
+            }
+            return chunks;
+        }
+
+        // เรียกใช้งาน Gemini API พร้อม Structured JSON Schema และ Exponential Backoff
+        async function analyzeChunkWithGemini(chunkText, chunkOffset, fullText) {
+            const apiKey = "";
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
+
+            const systemPrompt = `คุณคือผู้เชี่ยวชาญด้านภาษาไทยและบรรณาธิการหนังสือราชการระดับสูง (อ้างอิงตามหลักเกณฑ์สำนักงานราชบัณฑิตยสภา)
+ภารกิจของคุณคือตรวจจับและวิเคราะห์ข้อผิดพลาดในข้อความภาษาไทยที่ได้รับอย่างละเอียด ครบถ้วนทั้ง 10 หมวดหมู่ต่อไปนี้:
+1. "พิมพ์ผิด" (คำที่พิมพ์ตัวอักษรผิดเพี้ยนจากบริบท)
+2. "สะกดผิด" (คำที่สะกดผิดจากพจนานุกรมราชบัณฑิตยสถาน เช่น อณุญาติ -> อนุญาต, สังเกตุ -> สังเกต, กฏหมาย -> กฎหมาย)
+3. "เว้นวรรคผิด" (เช่น ไม่เว้นวรรคหน้า/หลังไม้ยมก 'ๆ' เช่น 'ต่าง ๆ', เว้นวรรคผิดที่กลางคำ หรือติดกันเกินไปในประโยคราชการ)
+4. "ตัวการันต์ผิด" (เช่น เซ็นต์ -> เซ็น, สัปห์ดา -> สัปดาห์, อารมย์ -> อารมณ์)
+5. "พิมพ์ตก" (พิมพ์พยัญชนะ สระ หรือตัวสะกดตกหล่น เช่น 'การทำงา' -> 'การทำงาน', 'กาวางแผง' -> 'การวางแผน')
+6. "พิมพ์เกิน" (พิมพ์ตัวอักษร สระ หรือวรรณยุกต์เกินมา เช่น 'มาตราฐาน' -> 'มาตรฐาน', 'เเ' -> 'แ')
+7. "ใส่วรรณยุกต์ผิด" (ผันวรรณยุกต์ผิดความหมาย เช่น นะค่ะ -> นะคะ, คะ/ค่ะ สลับกัน, ป่า/ป้า)
+8. "ใช้คำสันธานผิด" (เช่น ใช้ 'เพราะว่า...จึง...' ซ้ำซ้อนเกินจำเป็นในภาษาเขียน, 'ถึงแม้ว่า...แต่...', 'เนื่องจาก...ดังนั้น...')
+9. "คำเชื่อมผิด" (ใช้คำเชื่อมหรือบุพบทผิดความหมาย เช่น 'กับ/แก่/แด่/ต่อ', 'เพื่อ/สำหรับ', 'และ/หรือ')
+10. "ผิดไวยากรณ์" (รูปประโยคไม่สมบูรณ์ ประธาน-กริยา-กรรมขาดหาย หรือใช้ภาษาพูดปนในเอกสารราชการ)
+
+กฎสำคัญในการตอบ:
+- ฟิลด์ "original" ต้องตรงกับข้อความย่อยที่มีอยู่ในต้นฉบับทุกตัวอักษร (Exact substring match) รวมถึงช่องว่างหากเป็นเรื่องการเว้นวรรค
+- ฟิลด์ "correct" คือข้อความที่แก้ไขให้ถูกต้องแล้ว (หากเป็นเรื่องเว้นวรรคให้ใส่ช่องว่างที่ถูกต้องใน "correct")
+- ฟิลด์ "category" ต้องเลือกใช้ชื่อหมวดหมู่ 1 ใน 10 ชื่อข้างต้นเท่านั้น
+- ฟิลด์ "reason" อธิบายเหตุผลตามหลักภาษาไทยอย่างชัดเจน กระชับ เข้าใจง่าย
+- ห้ามแจ้งเตือนคำที่สะกดถูกต้องตามพจนานุกรมและถูกต้องตามบริบทแล้วเด็ดขาด (เช่น คำราชการ 'ฝ่ายปกครองและฝึก', 'ศูนย์ฝึกอบรมตำรวจภูธรภาค 2', 'จำหน่าย', 'พัสดุ' หากเขียนถูกอยู่แล้วห้ามจับผิด)`;
+
+            const payload = {
+                contents: [{
+                    parts: [{
+                        text: `กรุณาตรวจวิเคราะห์ข้อผิดพลาดภาษาไทยทั้ง 10 หมวดหมู่จากข้อความต่อไปนี้:\n\n"""\n${chunkText}\n"""`
+                    }]
+                }],
+                systemInstruction: {
+                    parts: [{ text: systemPrompt }]
+                },
+                generationConfig: {
+                    temperature: 0.1,
+                    responseMimeType: "application/json",
+                    responseSchema: {
+                        type: "ARRAY",
+                        description: "รายการจุดที่พบข้อผิดพลาดในข้อความ",
+                        items: {
+                            type: "OBJECT",
+                            properties: {
+                                original: {
+                                    type: "STRING",
+                                    description: "ข้อความเดิมที่ผิด (ต้องตรงกับต้นฉบับทุกตัวอักษร)"
+                                },
+                                correct: {
+                                    type: "STRING",
+                                    description: "ข้อความที่แก้ไขให้ถูกต้องแล้ว"
+                                },
+                                category: {
+                                    type: "STRING",
+                                    enum: [
+                                        "พิมพ์ผิด",
+                                        "สะกดผิด",
+                                        "เว้นวรรคผิด",
+                                        "ตัวการันต์ผิด",
+                                        "พิมพ์ตก",
+                                        "พิมพ์เกิน",
+                                        "ใส่วรรณยุกต์ผิด",
+                                        "ใช้คำสันธานผิด",
+                                        "คำเชื่อมผิด",
+                                        "ผิดไวยากรณ์"
+                                    ]
+                                },
+                                reason: {
+                                    type: "STRING",
+                                    description: "คำอธิบายเหตุผลตามหลักภาษาไทย"
+                                }
+                            },
+                            required: ["original", "correct", "category", "reason"]
+                        }
+                    }
+                }
+            };
+
+            const responseData = await fetchWithExponentialBackoff(apiUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
             });
+
+            const rawJsonText = responseData?.candidates?.[0]?.content?.parts?.[0]?.text;
+            if (!rawJsonText) return [];
+
+            const parsedArray = JSON.parse(rawJsonText);
+            if (!Array.isArray(parsedArray)) return [];
+
+            // จับคู่ตำแหน่ง (index) ของแต่ละรายการใน fullText
+            const locatedIssues = [];
+            const usedRanges = [];
+
+            for (const item of parsedArray) {
+                if (!item.original || !item.correct || item.original === item.correct) continue;
+                if (customDictionary.has(item.original.trim())) continue;
+
+                // ค้นหาตำแหน่งใน chunkText ที่ยังไม่ถูกใช้
+                let searchFrom = 0;
+                let foundIdxInChunk = -1;
+                while (searchFrom < chunkText.length) {
+                    const idx = chunkText.indexOf(item.original, searchFrom);
+                    if (idx === -1) break;
+                    const globalStart = chunkOffset + idx;
+                    const globalEnd = globalStart + item.original.length;
+                    const overlaps = usedRanges.some(r => !(globalEnd <= r.start || globalStart >= r.end));
+                    if (!overlaps) {
+                        foundIdxInChunk = idx;
+                        usedRanges.push({ start: globalStart, end: globalEnd });
+                        break;
+                    }
+                    searchFrom = idx + 1;
+                }
+
+                if (foundIdxInChunk !== -1) {
+                    locatedIssues.push({
+                        id: 'ai_' + Math.random().toString(36).slice(2, 9),
+                        original: item.original,
+                        correct: item.correct,
+                        category: item.category,
+                        group: mapCategoryToGroup(item.category),
+                        reason: item.reason,
+                        index: chunkOffset + foundIdxInChunk,
+                        fixed: false
+                    });
+                }
+            }
+
+            return locatedIssues;
+        }
+
+        // Exponential Backoff สำหรับเรียก Gemini API (1s, 2s, 4s)
+        async function fetchWithExponentialBackoff(url, options, maxRetries = 3) {
+            let delay = 1000;
+            for (let attempt = 0; attempt < maxRetries; attempt++) {
+                try {
+                    const response = await fetch(url, options);
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}`);
+                    }
+                    return await response.json();
+                } catch (err) {
+                    if (attempt === maxRetries - 1) throw err;
+                    await new Promise(resolve => setTimeout(resolve, delay));
+                    delay *= 2;
+                }
+            }
+        }
+
+        // ระบบตรวจจับ Offline Rule-based (ทำงานทันที + เป็นตัวสำรอง)
+        function runOfflineRuleScanner(text) {
+            const issues = [];
+            const usedRanges = [];
+
+            const addIssueIfFree = (start, original, correct, category, group, reason) => {
+                if (customDictionary.has(original.trim())) return;
+                const end = start + original.length;
+                const overlaps = usedRanges.some(r => !(end <= r.start || start >= r.end));
+                if (!overlaps) {
+                    usedRanges.push({ start, end });
+                    issues.push({
+                        id: 'off_' + Math.random().toString(36).slice(2, 9),
+                        original,
+                        correct,
+                        category,
+                        group,
+                        reason,
+                        index: start,
+                        fixed: false
+                    });
+                }
+            };
+
+            // 1. ตรวจจับไม้ยมก (ๆ) ที่ติดกับคำหน้าโดยไม่เว้นวรรค
+            const maiYamokRegex = /([\u0E00-\u0E7F]+)(ๆ)/g;
+            let m;
+            while ((m = maiYamokRegex.exec(text)) !== null) {
+                addIssueIfFree(
+                    m.index,
+                    m[0],
+                    `${m[1]} ๆ`,
+                    'เว้นวรรคผิด',
+                    'spacing',
+                    'ตามหลักสำนักงานราชบัณฑิตยสภา ต้องเว้นวรรค 1 เคาะข้างหน้าและข้างหลังเครื่องหมายไม้ยมก (ๆ) เสมอ'
+                );
+            }
+
+            // 2. ตรวจจับสระเอซ้อน 2 ตัว (เเ) แทนสระแอ (แ)
+            const doubleERegex = /[\u0E00-\u0E7F]*เเ[\u0E00-\u0E7F]*/g;
+            while ((m = doubleERegex.exec(text)) !== null) {
+                addIssueIfFree(
+                    m.index,
+                    m[0],
+                    m[0].replace(/เเ/g, 'แ'),
+                    'พิมพ์เกิน',
+                    'spelling',
+                    'พิมพ์สระเอ (เ) ซ้อนกัน 2 ตัว แทนที่จะใช้สระแอ (แ)'
+                );
+            }
+
+            // 3. ตรวจจับวรรณยุกต์ซ้อนติดกัน 2 ตัว
+            const doubleToneRegex = /[\u0E00-\u0E7F]*[\u0E48-\u0E4B]{2,}[\u0E00-\u0E7F]*/g;
+            while ((m = doubleToneRegex.exec(text)) !== null) {
+                addIssueIfFree(
+                    m.index,
+                    m[0],
+                    m[0].replace(/([\u0E48-\u0E4B])[\u0E48-\u0E4B]+/g, '$1'),
+                    'ใส่วรรณยุกต์ผิด',
+                    'spelling',
+                    'พบวรรณยุกต์พิมพ์ซ้อนกัน 2 ตัวในคำเดียวกัน'
+                );
+            }
+
+            // 4. ตรวจจับคำในฐานข้อมูลคำผิด/พิมพ์ตกยอดฮิต
+            for (const [wrongWord, info] of Object.entries(OFFLINE_MISSPELLINGS)) {
+                let searchIdx = 0;
+                while (searchIdx < text.length) {
+                    const idx = text.indexOf(wrongWord, searchIdx);
+                    if (idx === -1) break;
+                    addIssueIfFree(idx, wrongWord, info.correct, info.category, info.group, info.reason);
+                    searchIdx = idx + wrongWord.length;
+                }
+            }
+
+            return issues.sort((a, b) => a.index - b.index);
+        }
+
+        // รวมผลลัพธ์จาก AI และ Offline โดยไม่ให้ช่วงตัวอักษรทับซ้อนกัน
+        function mergeAndDeduplicateIssues(fullText, aiIssues, offlineIssues) {
+            const combined = [...aiIssues];
+            for (const off of offlineIssues) {
+                const offEnd = off.index + off.original.length;
+                const overlapsWithAi = combined.some(ai => {
+                    const aiEnd = ai.index + ai.original.length;
+                    return !(offEnd <= ai.index || off.index >= aiEnd);
+                });
+                if (!overlapsWithAi) {
+                    combined.push(off);
+                }
+            }
+            return combined.sort((a, b) => a.index - b.index);
+        }
+
+        function mapCategoryToGroup(category) {
+            if (category === 'เว้นวรรคผิด') return 'spacing';
+            if (['ใช้คำสันธานผิด', 'คำเชื่อมผิด', 'ผิดไวยากรณ์'].includes(category)) return 'grammar';
+            return 'spelling'; // พิมพ์ผิด, สะกดผิด, ตัวการันต์ผิด, พิมพ์ตก, พิมพ์เกิน, ใส่วรรณยุกต์ผิด
+        }
+
+        // ============================================================================
+        // 5. การเรนเดอร์ผลลัพธ์ ตัวกรองหมวดหมู่ และรายการจุดผิดทั้งหมด
+        // ============================================================================
+        function renderAnalysisResult() {
+            const fullText = inputTextEl.value;
+            updateCategoryCounts();
+
+            if (!fullText.trim()) {
+                resultDisplayEl.innerHTML = `
+                    <div class="h-48 flex flex-col items-center justify-center text-slate-400 text-center">
+                        <i data-lucide="file-search" class="w-10 h-10 mb-2 opacity-40"></i>
+                        <p class="text-sm">ผลลัพธ์การวิเคราะห์คำผิดและไวยากรณ์จะแสดงในพื้นที่นี้</p>
+                    </div>`;
+                document.getElementById('issueListContainer').classList.add('hidden');
+                lucide.createIcons();
+                return;
+            }
+
+            // กรองรายการตามแท็บตัวกรองที่เลือก
+            const visibleIssues = currentIssues.filter(issue => {
+                if (activeFilterGroup === 'all') return true;
+                return issue.group === activeFilterGroup;
+            });
+
+            // สร้าง DOM โดยไล่เรียงตามตำแหน่ง index ใน fullText
+            const fragment = document.createDocumentFragment();
+            let cursor = 0;
+
+            for (const issue of visibleIssues) {
+                // ข้อความปกติก่อนถึงจุดไฮไลต์
+                if (issue.index > cursor) {
+                    fragment.appendChild(document.createTextNode(fullText.slice(cursor, issue.index)));
+                }
+
+                // สร้าง Span ไฮไลต์
+                const span = document.createElement('span');
+                span.setAttribute('data-issue-id', issue.id);
+
+                if (issue.fixed) {
+                    span.className = 'hl-fixed';
+                    span.textContent = issue.correct;
+                    span.title = `แก้ไขแล้ว (${issue.category})`;
+                } else {
+                    const groupClass = {
+                        spelling: 'hl-spelling',
+                        grammar: 'hl-grammar',
+                        spacing: 'hl-spacing'
+                    }[issue.group] || 'hl-spelling';
+
+                    span.className = groupClass;
+                    span.textContent = issue.original;
+                    span.title = `[${issue.category}] คลิกเพื่อแก้เป็น "${issue.correct}"`;
+                    span.onclick = (e) => openIssuePopover(e, issue.id);
+                }
+
+                fragment.appendChild(span);
+                cursor = issue.index + (issue.fixed ? issue.correct.length : issue.original.length);
+            }
+
+            if (cursor < fullText.length) {
+                fragment.appendChild(document.createTextNode(fullText.slice(cursor)));
+            }
 
             resultDisplayEl.innerHTML = '';
             resultDisplayEl.appendChild(fragment);
+
+            renderIssueListCards();
+        }
+
+        function renderIssueListCards() {
+            const container = document.getElementById('issueListContainer');
+            const listEl = document.getElementById('issueListCards');
+            const activeIssues = currentIssues.filter(i => !i.fixed && (activeFilterGroup === 'all' || i.group === activeFilterGroup));
+
+            if (activeIssues.length === 0) {
+                container.classList.add('hidden');
+                return;
+            }
+
+            container.classList.remove('hidden');
+            listEl.innerHTML = activeIssues.map(issue => {
+                const badgeStyles = {
+                    spelling: 'bg-red-100 text-red-700 border-red-200',
+                    grammar: 'bg-purple-100 text-purple-700 border-purple-200',
+                    spacing: 'bg-orange-100 text-orange-700 border-orange-200'
+                }[issue.group];
+
+                return `
+                    <div class="p-3 rounded-xl bg-slate-50 hover:bg-blue-50/60 border border-slate-200/80 flex items-start justify-between gap-2.5 transition-all">
+                        <div class="min-w-0 flex-1">
+                            <span class="inline-block px-2 py-0.5 rounded-md text-[10px] font-semibold border ${badgeStyles} mb-1">
+                                ${escapeHtml(issue.category)}
+                            </span>
+                            <div class="text-xs sm:text-sm font-medium text-slate-800 break-words">
+                                <span class="line-through text-red-600/80">${escapeHtml(issue.original)}</span>
+                                <span class="mx-1 text-slate-400">→</span>
+                                <span class="font-bold text-emerald-700">${escapeHtml(issue.correct)}</span>
+                            </div>
+                            <p class="text-[11px] text-slate-500 mt-0.5 line-clamp-2">${escapeHtml(issue.reason)}</p>
+                        </div>
+                        <button onclick="applySingleFixById('${issue.id}')" type="button" class="px-2.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold shrink-0 cursor-pointer shadow-xs">
+                            แก้
+                        </button>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function updateCategoryCounts() {
+            const unfixed = currentIssues.filter(i => !i.fixed);
+            const spellingCnt = unfixed.filter(i => i.group === 'spelling').length;
+            const grammarCnt = unfixed.filter(i => i.group === 'grammar').length;
+            const spacingCnt = unfixed.filter(i => i.group === 'spacing').length;
+
+            document.getElementById('statSpelling').textContent = spellingCnt;
+            document.getElementById('statGrammar').textContent = grammarCnt;
+            document.getElementById('statSpacing').textContent = spacingCnt;
+
+            document.getElementById('count-all').textContent = unfixed.length;
+            document.getElementById('count-spelling').textContent = spellingCnt;
+            document.getElementById('count-grammar').textContent = grammarCnt;
+            document.getElementById('count-spacing').textContent = spacingCnt;
+        }
+
+        function setFilterGroup(group) {
+            activeFilterGroup = group;
+            ['all', 'spelling', 'grammar', 'spacing'].forEach(g => {
+                const btn = document.getElementById(`filter-${g}`);
+                if (g === group) {
+                    btn.classList.add('ring-2', 'ring-offset-1', 'ring-blue-700', 'font-bold');
+                } else {
+                    btn.classList.remove('ring-2', 'ring-offset-1', 'ring-blue-700', 'font-bold');
+                }
+            });
+            renderAnalysisResult();
         }
 
         // ============================================================================
-        // 7. Popover แก้ไขคำรายจุด & เพิ่มคำลงพจนานุกรมส่วนตัว
+        // 6. Popover แก้ไขรายจุด & แก้ไขทั้งหมดอัตโนมัติ
         // ============================================================================
-        function openWordPopover(event, index) {
+        function openIssuePopover(event, issueId) {
             event.stopPropagation();
-            activeTokenIndex = index;
-            const token = analyzedTokens[index];
-            if (!token) return;
+            const issue = currentIssues.find(i => i.id === issueId);
+            if (!issue || issue.fixed) return;
 
+            activeIssueId = issueId;
             const badgeEl = document.getElementById('popoverBadge');
-            const origWordEl = document.getElementById('popoverOriginalWord');
-            const reasonBoxEl = document.getElementById('popoverReasonBox');
-            const errorActionsEl = document.getElementById('popoverErrorActions');
-            const unknownActionsEl = document.getElementById('popoverUnknownActions');
+            const badgeStyles = {
+                spelling: 'bg-red-100 text-red-700',
+                grammar: 'bg-purple-100 text-purple-700',
+                spacing: 'bg-orange-100 text-orange-700'
+            }[issue.group] || 'bg-red-100 text-red-700';
 
-            origWordEl.textContent = token.text;
-            reasonBoxEl.textContent = token.reason || '';
+            badgeEl.className = `inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold ${badgeStyles}`;
+            badgeEl.textContent = issue.category;
 
-            if (token.type === 'error') {
-                badgeEl.className = 'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-red-100 text-red-700';
-                badgeEl.textContent = 'คำสะกดผิดจริง';
-                errorActionsEl.classList.remove('hidden');
-                unknownActionsEl.classList.add('hidden');
+            document.getElementById('popoverOriginalWord').textContent = issue.original;
+            document.getElementById('popoverReasonBox').textContent = issue.reason;
+            document.getElementById('popoverCorrectWord').textContent = `เปลี่ยนเป็น "${issue.correct}"`;
 
-                document.getElementById('popoverCorrectWord').textContent = `เปลี่ยนเป็น "${token.correct}"`;
-                document.getElementById('popoverFixBtn').onclick = () => {
-                    applySingleFix(index, token.correct);
-                };
-            } else if (token.type === 'unknown') {
-                badgeEl.className = 'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-orange-100 text-orange-700';
-                badgeEl.textContent = 'ไม่อยู่ในพจนานุกรม';
-                errorActionsEl.classList.add('hidden');
-                unknownActionsEl.classList.remove('hidden');
+            document.getElementById('popoverFixBtn').onclick = () => {
+                applySingleFixById(issue.id);
+            };
 
-                const manualInput = document.getElementById('popoverManualInput');
-                manualInput.value = token.text;
+            document.getElementById('popoverIgnoreBtn').onclick = () => {
+                ignoreIssueAndAddCustomDict(issue);
+            };
 
-                document.getElementById('popoverAddDictBtn').onclick = () => {
-                    addWordToCustomDictionary(token.text);
-                };
-                document.getElementById('popoverManualSaveBtn').onclick = () => {
-                    const newVal = manualInput.value.trim();
-                    if (newVal) {
-                        applySingleFix(index, newVal);
-                    }
-                };
-            }
-
-            // คำนวณตำแหน่ง Popover ไม่ให้ล้นหน้าจอ
             wordPopoverEl.classList.remove('hidden');
             const rect = event.target.getBoundingClientRect();
-            const popoverRect = wordPopoverEl.getBoundingClientRect();
+            const popRect = wordPopoverEl.getBoundingClientRect();
 
             let top = rect.bottom + 8;
             let left = rect.left;
 
-            if (left + popoverRect.width > window.innerWidth - 16) {
-                left = window.innerWidth - popoverRect.width - 16;
+            if (left + popRect.width > window.innerWidth - 16) {
+                left = window.innerWidth - popRect.width - 16;
             }
             if (left < 16) left = 16;
-
-            if (top + popoverRect.height > window.innerHeight - 16) {
-                top = rect.top - popoverRect.height - 8;
+            if (top + popRect.height > window.innerHeight - 16) {
+                top = rect.top - popRect.height - 8;
             }
 
             wordPopoverEl.style.top = `${Math.max(16, top)}px`;
@@ -1130,28 +1212,82 @@
 
         function closePopover() {
             wordPopoverEl.classList.add('hidden');
-            activeTokenIndex = null;
+            activeIssueId = null;
         }
 
-        function applySingleFix(index, newWord) {
-            const oldWord = analyzedTokens[index].text;
-            analyzedTokens[index] = { text: newWord, type: 'fixed' };
+        function applySingleFixById(issueId) {
+            const targetIdx = currentIssues.findIndex(i => i.id === issueId);
+            if (targetIdx === -1) return;
 
-            // อัปเดตข้อความใน Textarea ให้ตรงกันเสมอ
-            syncTokensToTextarea();
-            renderResultDisplay();
-            recalculateCounts();
+            const issue = currentIssues[targetIdx];
+            if (issue.fixed) return;
+
+            const fullText = inputTextEl.value;
+            const before = fullText.slice(0, issue.index);
+            const after = fullText.slice(issue.index + issue.original.length);
+            const updatedText = before + issue.correct + after;
+
+            const lengthDiff = issue.correct.length - issue.original.length;
+            issue.fixed = true;
+
+            // เลื่อนตำแหน่ง index ของจุดผิดถัดไปทั้งหมดตามความยาวตัวอักษรที่เปลี่ยนไป
+            for (let i = targetIdx + 1; i < currentIssues.length; i++) {
+                currentIssues[i].index += lengthDiff;
+            }
+
+            inputTextEl.value = updatedText;
+            charCountEl.textContent = `${updatedText.length.toLocaleString()} ตัวอักษร`;
             closePopover();
-            showToast(`แก้ไข "${oldWord}" เป็น "${newWord}" เรียบร้อย`, 'success');
+            renderAnalysisResult();
+            showToast(`แก้ไขเป็น "${issue.correct}" เรียบร้อย`, 'success');
         }
 
-        function addWordToCustomDictionary(word) {
-            customDictionary.add(word);
-            localStorage.setItem('thaiSpell_customDict', JSON.stringify(Array.from(customDictionary)));
-            updateCustomDictCount();
+        function fixAllIssues() {
+            const unfixedIssues = currentIssues.filter(i => !i.fixed);
+            if (unfixedIssues.length === 0) {
+                showToast('ไม่พบจุดผิดที่ต้องแก้ไขแล้ว', 'info');
+                return;
+            }
+
+            // แก้ไขจากหลังมาหน้าเพื่อไม่ให้ index คลาดเคลื่อน
+            let text = inputTextEl.value;
+            const sortedDesc = [...currentIssues].sort((a, b) => b.index - a.index);
+
+            let fixedCount = 0;
+            for (const issue of sortedDesc) {
+                if (!issue.fixed) {
+                    text = text.slice(0, issue.index) + issue.correct + text.slice(issue.index + issue.original.length);
+                    issue.fixed = true;
+                    fixedCount++;
+                }
+            }
+
+            // คำนวณ index ใหม่จากหน้าไปหลังสำหรับแสดงไฮไลต์สีเขียว
+            let cumulativeShift = 0;
+            currentIssues.sort((a, b) => a.index - b.index).forEach(issue => {
+                issue.index += cumulativeShift;
+                cumulativeShift += (issue.correct.length - issue.original.length);
+            });
+
+            inputTextEl.value = text;
+            charCountEl.textContent = `${text.length.toLocaleString()} ตัวอักษร`;
             closePopover();
-            runSpellCheck();
-            showToast(`เพิ่ม "${word}" ลงพจนานุกรมส่วนตัวแล้ว`, 'info');
+            renderAnalysisResult();
+            updateStatusBanner(`🪄 แก้ไขจุดผิดทั้งหมด ${fixedCount} จุดอัตโนมัติเรียบร้อยแล้ว!`, 'success');
+            showToast(`🪄 แก้ไขจุดผิดทั้งหมด ${fixedCount} จุดสำเร็จ`, 'success');
+        }
+
+        function ignoreIssueAndAddCustomDict(issue) {
+            const cleanWord = issue.original.trim();
+            if (cleanWord) {
+                customDictionary.add(cleanWord);
+                localStorage.setItem('thaiSpellPro_customDict', JSON.stringify(Array.from(customDictionary)));
+                updateCustomDictCount();
+            }
+            currentIssues = currentIssues.filter(i => i.original.trim() !== cleanWord);
+            closePopover();
+            renderAnalysisResult();
+            showToast(`เพิ่ม "${cleanWord}" ลงพจนานุกรมส่วนตัวแล้ว`, 'info');
         }
 
         function clearCustomDictionary() {
@@ -1160,10 +1296,9 @@
                 return;
             }
             customDictionary.clear();
-            localStorage.removeItem('thaiSpell_customDict');
+            localStorage.removeItem('thaiSpellPro_customDict');
             updateCustomDictCount();
-            if (inputTextEl.value.trim()) runSpellCheck();
-            showToast('ล้างคำที่เพิ่มเองทั้งหมดเรียบร้อย', 'info');
+            showToast('ล้างรายการคำที่ละเว้นเรียบร้อย', 'info');
         }
 
         function updateCustomDictCount() {
@@ -1171,91 +1306,23 @@
         }
 
         // ============================================================================
-        // 8. แก้คำผิดทั้งหมดอัตโนมัติ (เฉพาะสีแดง) และส่งออกไฟล์ (.txt, .doc, .csv)
-        // ============================================================================
-        function fixAllErrors() {
-            if (analyzedTokens.length === 0) {
-                runSpellCheck();
-                if (analyzedTokens.length === 0) return;
-            }
-
-            let fixedCount = 0;
-            analyzedTokens = analyzedTokens.map(token => {
-                if (token.type === 'error' && token.correct) {
-                    fixedCount++;
-                    return { text: token.correct, type: 'fixed' };
-                }
-                return token;
-            });
-
-            if (fixedCount === 0) {
-                showToast('ไม่พบคำสะกดผิดสีแดงที่ต้องแก้ไข', 'info');
-                return;
-            }
-
-            syncTokensToTextarea();
-            renderResultDisplay();
-            recalculateCounts();
-            closePopover();
-            updateStatusBanner(`แก้คำสะกดผิดอัตโนมัติสำเร็จ ${fixedCount} จุด! สามารถกดคัดลอกข้อความไปใช้งานได้ทันที`, 'success');
-            showToast(`🪄 แก้ไขคำผิดอัตโนมัติสำเร็จ ${fixedCount} จุด`, 'success');
-        }
-
-        function syncTokensToTextarea() {
-            const fullText = analyzedTokens.map(t => t.text).join('');
-            inputTextEl.value = fullText;
-            charCountEl.textContent = `${fullText.length.toLocaleString()} ตัวอักษร`;
-        }
-
-        function recalculateCounts() {
-            let err = 0;
-            let unk = 0;
-            analyzedTokens.forEach(t => {
-                if (t.type === 'error') err++;
-                if (t.type === 'unknown') unk++;
-            });
-            updateSummaryCounts(err, unk);
-        }
-
-        function updateSummaryCounts(errCount, unkCount) {
-            errorCountDisplayEl.textContent = errCount;
-            unknownCountDisplayEl.textContent = unkCount;
-        }
-
-        function updateStatusBanner(message, type = 'neutral') {
-            const styles = {
-                neutral: 'bg-slate-100 text-slate-600',
-                success: 'bg-emerald-50 text-emerald-700 border border-emerald-200',
-                warning: 'bg-amber-50 text-amber-800 border border-amber-200'
-            };
-            statusBannerEl.className = `mt-3.5 px-4 py-2.5 rounded-xl text-sm flex items-center gap-2 transition-all ${styles[type] || styles.neutral}`;
-            statusBannerEl.innerHTML = `<i data-lucide="info" class="w-4 h-4 shrink-0"></i><span>${message}</span>`;
-            lucide.createIcons();
-        }
-
-        // ============================================================================
-        // 8. คัดลอกข้อความ, บันทึกประวัติ (LocalStorage) และ Export CSV (UTF-8 BOM)
+        // 7. ส่งออกไฟล์ (.txt, .doc, .csv) คัดลอก และบันทึกประวัติ
         // ============================================================================
         function copyCorrectedText() {
-            const textToCopy = analyzedTokens.length > 0
-                ? analyzedTokens.map(t => t.text).join('')
-                : inputTextEl.value;
-
+            const textToCopy = inputTextEl.value;
             if (!textToCopy.trim()) {
                 showToast('ไม่มีข้อความสำหรับคัดลอก', 'warning');
                 return;
             }
-
             const tempTextarea = document.createElement('textarea');
             tempTextarea.value = textToCopy;
             tempTextarea.style.position = 'fixed';
             tempTextarea.style.left = '-9999px';
             document.body.appendChild(tempTextarea);
             tempTextarea.select();
-
             try {
                 document.execCommand('copy');
-                showToast('คัดลอกข้อความที่แก้แล้วลงคลิปบอร์ดสำเร็จ!', 'success');
+                showToast('คัดลอกข้อความลงคลิปบอร์ดสำเร็จ!', 'success');
             } catch (err) {
                 showToast('ไม่สามารถคัดลอกอัตโนมัติได้ กรุณากด Ctrl+C', 'warning');
             }
@@ -1263,15 +1330,11 @@
         }
 
         function downloadCorrectedTxt() {
-            const textToSave = analyzedTokens.length > 0
-                ? analyzedTokens.map(t => t.text).join('')
-                : inputTextEl.value;
-
+            const textToSave = inputTextEl.value;
             if (!textToSave.trim()) {
                 showToast('ไม่มีข้อความสำหรับดาวน์โหลด', 'warning');
                 return;
             }
-
             const baseName = currentUploadedFileName || `เอกสารตรวจคำผิด_${new Date().toISOString().slice(0, 10)}`;
             const blob = new Blob([textToSave], { type: 'text/plain;charset=utf-8' });
             const url = URL.createObjectURL(blob);
@@ -1282,20 +1345,15 @@
             link.click();
             document.body.removeChild(link);
             URL.revokeObjectURL(url);
-
-            showToast('ดาวน์โหลดไฟล์ข้อความที่แก้แล้ว (.txt) สำเร็จ', 'success');
+            showToast('ดาวน์โหลดไฟล์ .txt สำเร็จ', 'success');
         }
 
         function downloadCorrectedDoc() {
-            const textToSave = analyzedTokens.length > 0
-                ? analyzedTokens.map(t => t.text).join('')
-                : inputTextEl.value;
-
+            const textToSave = inputTextEl.value;
             if (!textToSave.trim()) {
                 showToast('ไม่มีข้อความสำหรับส่งออกเป็น Word', 'warning');
                 return;
             }
-
             const htmlBody = textToSave
                 .split('\n')
                 .map(line => `<p style="font-family: 'TH Sarabun New', 'Sarabun', sans-serif; font-size: 16pt; margin: 0 0 6pt 0;">${escapeHtml(line) || '&nbsp;'}</p>`)
@@ -1307,7 +1365,6 @@
                 <body>${htmlBody}</body>
                 </html>
             `;
-
             const baseName = currentUploadedFileName || `เอกสารตรวจคำผิด_${new Date().toISOString().slice(0, 10)}`;
             const blob = new Blob(['\uFEFF', docContent], { type: 'application/msword;charset=utf-8' });
             const url = URL.createObjectURL(blob);
@@ -1318,8 +1375,35 @@
             link.click();
             document.body.removeChild(link);
             URL.revokeObjectURL(url);
-
             showToast('ส่งออกไฟล์เอกสาร Word (.doc) สำเร็จ', 'success');
+        }
+
+        function exportToCSV() {
+            if (currentIssues.length === 0) {
+                showToast('ไม่มีรายการจุดผิดสำหรับสร้างรายงาน CSV', 'info');
+                return;
+            }
+            const headers = ['ลำดับ', 'หมวดหมู่ความผิด', 'ข้อความเดิมที่พบ', 'คำแนะนำที่ถูกต้อง', 'สถานะ', 'คำอธิบายหลักภาษา'];
+            const rows = currentIssues.map((item, idx) => [
+                idx + 1,
+                `"${item.category.replace(/"/g, '""')}"`,
+                `"${item.original.replace(/"/g, '""')}"`,
+                `"${item.correct.replace(/"/g, '""')}"`,
+                item.fixed ? '"แก้ไขแล้ว"' : '"ยังไม่แก้ไข"',
+                `"${(item.reason || '').replace(/"/g, '""')}"`
+            ]);
+
+            const csvContent = '\uFEFF' + [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `รายงานตรวจคำผิดและไวยากรณ์_${new Date().toISOString().slice(0, 10)}.csv`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+            showToast('⬇️ ดาวน์โหลดรายงาน CSV สำเร็จ', 'success');
         }
 
         function saveCurrentResult() {
@@ -1328,25 +1412,19 @@
                 showToast('ไม่มีข้อความให้บันทึก', 'warning');
                 return;
             }
-            if (analyzedTokens.length === 0) runSpellCheck();
-
-            const errCount = parseInt(errorCountDisplayEl.textContent, 10) || 0;
-            const unkCount = parseInt(unknownCountDisplayEl.textContent, 10) || 0;
-
+            const unfixedCount = currentIssues.filter(i => !i.fixed).length;
             const record = {
                 id: Date.now(),
                 timestamp: new Date().toLocaleString('th-TH', { dateStyle: 'short', timeStyle: 'short' }),
-                preview: text.slice(0, 60) + (text.length > 60 ? '...' : ''),
+                preview: text.slice(0, 65) + (text.length > 65 ? '...' : ''),
                 fullText: inputTextEl.value,
-                errorCount: errCount,
-                unknownCount: unkCount
+                issueCount: unfixedCount
             };
-
             checkHistory.unshift(record);
             if (checkHistory.length > 15) checkHistory.pop();
-            localStorage.setItem('thaiSpell_history', JSON.stringify(checkHistory));
+            localStorage.setItem('thaiSpellPro_history', JSON.stringify(checkHistory));
             renderHistory();
-            showToast('💾 บันทึกผลการตรวจสอบลงในเครื่องเรียบร้อย', 'success');
+            showToast('💾 บันทึกผลตรวจลงประวัติเรียบร้อย', 'success');
         }
 
         function renderHistory() {
@@ -1355,16 +1433,15 @@
                 historyListEl.innerHTML = '<p class="text-xs text-slate-400 text-center py-4">ยังไม่มีรายการที่บันทึก</p>';
                 return;
             }
-
             historyListEl.innerHTML = checkHistory.map(item => `
                 <div onclick="loadHistoryItem(${item.id})" class="p-3 rounded-xl bg-slate-50 hover:bg-blue-50/70 border border-slate-200/80 cursor-pointer transition-all group">
                     <div class="flex items-center justify-between text-[11px] text-slate-400 mb-1">
                         <span>${item.timestamp}</span>
-                        <span class="font-medium ${item.errorCount > 0 ? 'text-red-600' : 'text-emerald-600'}">
-                            ผิด ${item.errorCount} • ตรวจเพิ่ม ${item.unknownCount}
+                        <span class="font-medium ${item.issueCount > 0 ? 'text-red-600' : 'text-emerald-600'}">
+                            ${item.issueCount > 0 ? `พบจุดแก้ ${item.issueCount} จุด` : 'เรียบร้อยดี'}
                         </span>
                     </div>
-                    <p class="text-xs text-slate-700 line-clamp-2 group-hover:text-blue-800">${escapeHtml(item.preview)}</p>
+                    <p class="text-xs text-slate-700 line-clamp-2 group-hover:text-blue-900">${escapeHtml(item.preview)}</p>
                 </div>
             `).join('');
         }
@@ -1373,58 +1450,31 @@
             const item = checkHistory.find(h => h.id === id);
             if (!item) return;
             inputTextEl.value = item.fullText;
-            runSpellCheck();
+            runFullAnalysis();
             showToast('โหลดข้อความจากประวัติเรียบร้อย', 'info');
         }
 
         function clearHistory() {
             checkHistory = [];
-            localStorage.removeItem('thaiSpell_history');
+            localStorage.removeItem('thaiSpellPro_history');
             renderHistory();
             showToast('ล้างประวัติการบันทึกแล้ว', 'info');
         }
 
-        function exportToCSV() {
-            if (analyzedTokens.length === 0) {
-                runSpellCheck();
-                if (analyzedTokens.length === 0) return;
-            }
+        // ============================================================================
+        // 8. ปุ่มทดสอบสำเร็จรูป 3 แบบตามที่กำหนด
+        // ============================================================================
+        function loadSample10Categories() {
+            inputTextEl.value = `การทำงาที่ไม่มีกาวางแผง ย่อมส่งผลเสียต่อความสำเร็จขององค์กรในระยะยาว
 
-            const flaggedItems = analyzedTokens.filter(t => t.type === 'error' || t.type === 'unknown');
-            if (flaggedItems.length === 0) {
-                showToast('ไม่พบคำผิดหรือคำที่ต้องรายงานในเอกสารนี้', 'info');
-                return;
-            }
+เพราะว่าบุคลากรยังขาดความเข้าใจในกฏระเบียบและมาตราฐานการปฏิบัติงาน จึงทำให้เกิดข้อผิดพลาดอยู่บ่อยๆ ซึ่งเรื่องดังกล่าวทางฝ่ายบริหารได้สังเกตุเห็นมาตลอดทั้งสัปห์ดาแล้ว นะค่ะ
 
-            // สร้าง CSV พร้อม UTF-8 BOM (\uFEFF) เพื่อเปิดใน Excel ภาษาไทยได้สมบูรณ์ไม่เป็นภาษาต่างดาว
-            const headers = ['ลำดับ', 'คำที่พบในเอกสาร', 'ประเภทการแจ้งเตือน', 'คำแนะนำที่ถูกต้อง', 'คำอธิบายหลักภาษา'];
-            const rows = flaggedItems.map((item, idx) => [
-                idx + 1,
-                `"${item.text.replace(/"/g, '""')}"`,
-                item.type === 'error' ? '"คำสะกดผิดจริง"' : '"ไม่อยู่ในพจนานุกรม"',
-                item.correct ? `"${item.correct.replace(/"/g, '""')}"` : '"-"',
-                `"${(item.reason || '').replace(/"/g, '""')}"`
-            ]);
+ถึงแม้ว่าเจ้าหน้าที่จะตั้งใจทำงานอย่างเต็มที่ แต่ทว่าหากไม่มีการเซ็นต์อนุมัติงบประมานที่ชัดเจน ก็อาจทำให้การดำเนินโครงการคลาดเคลื่อนได้`;
 
-            const csvContent = '\uFEFF' + [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
-            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-            const url = URL.createObjectURL(blob);
-
-            const link = document.createElement('a');
-            link.href = url;
-            link.setAttribute('download', `รายงานตรวจคำผิดภาษาไทย_${new Date().toISOString().slice(0, 10)}.csv`);
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            URL.revokeObjectURL(url);
-
-            showToast('⬇️ ดาวน์โหลดไฟล์รายงานคำผิด (CSV) สำเร็จ', 'success');
+            runFullAnalysis();
         }
 
-        // ============================================================================
-        // 9. ข้อความตัวอย่างสำหรับทดสอบระบบ
-        // ============================================================================
-        function loadSampleWithErrors() {
+        function loadSampleOfficialWithErrors() {
             inputTextEl.value = `บันทึกข้อความ
 ส่วนราชการ ฝ่ายปกครองและฝึก ศูนย์ฝึกอบรมตำรวจภูธรภาค 2
 ที่ 0017.(11)3 / 1245        วันที่ 25 พฤศจิกายน 2569
@@ -1432,17 +1482,16 @@
 
 เรียน ผู้บังคับการศูนย์ฝึกอบรมตำรวจภูธรภาค 2
 
-        ตามที่ฝ่ายปกครองได้สังเกตุเห็นว่า การจัดทำหนังสือราชการและการปฎิบัติงานด้านพัศดุในปัจจุบัน ยังคงปรากฎข้อผิดพลาดในการใช้ภาษาไทยและกฏระเบียบอยู่บ่อยครั้ง ทำให้เสียโอกาศในการพัฒนาคุณภาพงาน
+        ตามที่ฝ่ายปกครองได้สังเกตุเห็นว่า การจัดทำหนังสือราชการและการปฎิบัติงานด้านพัศดุในปัจจุบัน ยังคงปรากฎข้อผิดพลาดในการใช้ภาษาไทยและกฏระเบียบอยู่บ่อยๆ เพราะว่าเจ้าหน้าที่ยังขาดความชำนาญ จึงทำให้เสียโอกาศในการพัฒนาคุณภาพงาน
 
         ในการนี้ เพื่อให้งานด้านธุรการและการคำนวนงบประมาณเป็นไปด้วยความปราณีต รอบคอบ ถูกต้องตามมาตราฐานของสำนักงานตำรวจแห่งชาติ จึงใคร่ขออณุญาตจัดโครงการอบรมเชิงปฏิบัติการ โดยได้เชิญวิทยากรผู้ทรงคุณวุฒิมาให้ความรู้แก่ข้าราชการตำรวจ ก่อนที่จะเกษียรอายุราชการ
 
         จึงเรียนมาเพื่อโปรดพิจารณาอณุญาติ หากเห็นชอบโปรดเซ็นต์ชื่ออนุมัติในโครงการดังกล่าวด้วย จักเป็นพระคุณยิ่ง`;
 
-            runSpellCheck();
-            showToast('ใส่ข้อความตัวอย่างที่มีคำผิดแล้ว ลองคลิกที่คำสีแดงหรือกด "แก้คำผิดทั้งหมดอัตโนมัติ"', 'info');
+            runFullAnalysis();
         }
 
-        function loadSampleOfficial() {
+        function loadSampleOfficialClean() {
             inputTextEl.value = `คำสั่ง ฝ่ายปกครองและฝึก ศูนย์ฝึกอบรมตำรวจภูธรภาค 2
 ที่   / 2567
 เรื่อง แต่งตั้งคณะกรรมการสอบสวนหาข้อเท็จจริง
@@ -1450,31 +1499,66 @@
 
         ตามหนังสือ ฝ่ายอำนวยการ ศูนย์ฝึกอบรมตำรวจภูธรภาค 2 ที่ 0017.(11)3 / 87 ลง 20 กันยายน 2567 อ้างถึง หนังสือ ฝ่ายปกครองและฝึก ศูนย์ฝึกอบรมตำรวจภูธรภาค 2 ที่ 0017.(11)3 / 219 ลง 30 สิงหาคม 2567 เรื่อง ขออนุมัติจำหน่ายเครื่องรับ-ส่ง วิทยุสื่อสาร ชนิดมือถือ โดยแจ้งให้ ฝ่ายปกครองและฝึก ศูนย์ฝึกอบรมตำรวจภูธรภาค 2 ดำเนินการตั้งคณะกรรมการสอบสวนหาข้อเท็จจริงว่า พัสดุตามรายการที่ขออนุมัติจำหน่าย มีการเสื่อมสภาพตามอายุการใช้งานตามปกติหรือไม่ และรายงานผลให้ผู้บังคับการศูนย์ฝึกอบรมตำรวจภูธรภาค 2 ทราบ เพื่อพิจารณาสั่งการให้ดำเนินการจำหน่ายต่อไปนั้น
 
-        เพื่อให้การสอบสวนหาข้อเท็จจริง เป็นไปด้วยความเรียบร้อย อาศัยอำนาจตามระเบียบสำนักนายกรัฐมนตรีว่าด้วยการพัสดุ พ.ศ.2535 และที่แก้ไขเพิ่มเติม และคำสั่งตำรวจภูธรภาค 2 ที่ 299/2560 ลง 5 กันยายน 2560 เรื่อง การมอบอำนาจตามระเบียบกระทรวงการคลังว่าด้วยการจัดซื้อจัดจ้างและการบริหารงานพัสดุภาครัฐ พ.ศ.2560 จึงมอบหมายให้ข้าราชการตำรวจเป็นคณะกรรมการสอบสวนหาข้อเท็จจริง ดังนี้
+        เพื่อให้การสอบสวนหาข้อเท็จจริงเป็นไปด้วยความเรียบร้อย อาศัยอำนาจตามระเบียบสำนักนายกรัฐมนตรีว่าด้วยการพัสดุ พ.ศ. 2535 และที่แก้ไขเพิ่มเติม และคำสั่งตำรวจภูธรภาค 2 ที่ 299/2560 ลง 5 กันยายน 2560 เรื่อง การมอบอำนาจตามระเบียบกระทรวงการคลังว่าด้วยการจัดซื้อจัดจ้างและการบริหารงานพัสดุภาครัฐ พ.ศ. 2560 จึงมอบหมายให้ข้าราชการตำรวจเป็นคณะกรรมการสอบสวนหาข้อเท็จจริง ดังนี้
 
         1. พันตำรวจโท สมศักดิ์ คำเผือก เป็นประธานกรรมการ`;
 
-            runSpellCheck();
-            showToast('ทดสอบด้วยหนังสือราชการที่ถูกต้อง (สังเกตว่าระบบตัดคำได้ถูกต้อง ไม่เตือนมั่วซั่ว)', 'success');
+            runFullAnalysis();
         }
 
         function clearAll() {
             inputTextEl.value = '';
-            analyzedTokens = [];
+            currentIssues = [];
             clearUploadedFile();
             charCountEl.textContent = '0 ตัวอักษร';
-            updateSummaryCounts(0, 0);
             closePopover();
-            resultDisplayEl.innerHTML = `
-                <div class="h-44 flex flex-col items-center justify-center text-slate-400 text-center">
-                    <i data-lucide="file-search" class="w-10 h-10 mb-2 opacity-40"></i>
-                    <p class="text-sm">ผลลัพธ์การตรวจคำผิดจะแสดงในพื้นที่นี้</p>
-                </div>`;
-            lucide.createIcons();
+            renderAnalysisResult();
             updateStatusBanner('ล้างข้อความเรียบร้อย พร้อมสำหรับการตรวจสอบใหม่', 'neutral');
         }
 
-        // Helper Functions
+        // ============================================================================
+        // 9. UI Helper Functions
+        // ============================================================================
+        function setButtonLoading(loading) {
+            const btn = document.getElementById('checkBtn');
+            if (loading) {
+                btn.disabled = true;
+                btn.classList.add('opacity-75', 'cursor-wait');
+                btn.innerHTML = `<svg class="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg><span>กำลังวิเคราะห์ 10 หมวด...</span>`;
+            } else {
+                btn.disabled = false;
+                btn.classList.remove('opacity-75', 'cursor-wait');
+                btn.innerHTML = `<i data-lucide="scan-search" class="w-4 h-4"></i><span>ตรวจคำผิดและไวยากรณ์</span>`;
+                lucide.createIcons();
+            }
+        }
+
+        function setEngineBadge(text, color) {
+            const badge = document.getElementById('engineBadge');
+            const colorMap = {
+                emerald: 'bg-emerald-500/15 text-emerald-300 border-emerald-400/30',
+                amber: 'bg-amber-500/15 text-amber-300 border-amber-400/30'
+            };
+            badge.className = `inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs sm:text-sm font-medium border ${colorMap[color] || colorMap.emerald}`;
+            badge.innerHTML = `<span class="w-2 h-2 rounded-full bg-current"></span>${text}`;
+        }
+
+        function updateStatusBanner(message, type = 'neutral') {
+            const styles = {
+                neutral: 'bg-slate-100 text-slate-600',
+                loading: 'bg-blue-50 text-blue-800 border border-blue-200',
+                success: 'bg-emerald-50 text-emerald-700 border border-emerald-200',
+                warning: 'bg-amber-50 text-amber-800 border border-amber-200'
+            };
+            const iconHtml = type === 'loading'
+                ? `<svg class="animate-spin h-4 w-4 text-blue-700 shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>`
+                : `<i data-lucide="info" class="w-4 h-4 shrink-0"></i>`;
+
+            statusBannerEl.className = `mt-4 px-4 py-3 rounded-xl text-sm flex items-center gap-2.5 transition-all ${styles[type] || styles.neutral}`;
+            statusBannerEl.innerHTML = `${iconHtml}<span>${message}</span>`;
+            if (type !== 'loading') lucide.createIcons();
+        }
+
         function showToast(message, type = 'info') {
             const container = document.getElementById('toastContainer');
             const toast = document.createElement('div');
@@ -1498,7 +1582,7 @@
         }
 
         function escapeHtml(str) {
-            return str.replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
+            return String(str).replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
         }
     </script>
 </body>
