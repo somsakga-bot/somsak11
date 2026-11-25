@@ -1016,7 +1016,13 @@
                 while (searchIdx < text.length) {
                     const idx = text.indexOf(wrongWord, searchIdx);
                     if (idx === -1) break;
-                    addIssueIfFree(idx, wrongWord, info.correct, info.category, info.group, info.reason);
+                    // ป้องกันคำผิดที่เป็นเพียงส่วนต้นของคำที่ถูกต้อง เช่น "ราชกา" ใน "ราชการ"
+                    // หากคำที่ถูกต้องตามคลังอยู่ตรงตำแหน่งเดียวกัน ให้ข้ามการแจ้งเตือน
+                    const isPrefixOfCorrectWord = info.correct.startsWith(wrongWord)
+                        && text.slice(idx, idx + info.correct.length) === info.correct;
+                    if (!isPrefixOfCorrectWord) {
+                        addIssueIfFree(idx, wrongWord, info.correct, info.category, info.group, info.reason);
+                    }
                     searchIdx = idx + wrongWord.length;
                 }
             }
