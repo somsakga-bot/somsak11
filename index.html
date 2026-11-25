@@ -228,9 +228,14 @@
                             <span>ตรวจคำผิดและไวยากรณ์</span>
                         </button>
 
+                        <button onclick="loadUserTestSentence()" type="button" class="inline-flex items-center gap-1.5 px-3.5 py-2.5 rounded-full text-xs sm:text-sm font-medium bg-rose-50 hover:bg-rose-100 text-rose-900 border border-rose-200 transition-all cursor-pointer">
+                            <i data-lucide="zap" class="w-3.5 h-3.5 text-rose-600"></i>
+                            ทดสอบ "กา ทำงา ที่ไม่มีการวาแผนที่ดี"
+                        </button>
+
                         <button onclick="loadSample10Categories()" type="button" class="inline-flex items-center gap-1.5 px-3.5 py-2.5 rounded-full text-xs sm:text-sm font-medium bg-indigo-50 hover:bg-indigo-100 text-indigo-900 border border-indigo-200 transition-all cursor-pointer">
                             <i data-lucide="sparkles" class="w-3.5 h-3.5 text-indigo-600"></i>
-                            ทดสอบ 10 หมวด (ทำงา/กาวางแผง)
+                            ทดสอบ 10 หมวดหมู่
                         </button>
 
                         <button onclick="loadSampleOfficialWithErrors()" type="button" class="inline-flex items-center gap-1.5 px-3.5 py-2.5 rounded-full text-xs sm:text-sm font-medium bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200 transition-all cursor-pointer">
@@ -433,7 +438,7 @@
         }
 
         // ============================================================================
-        // 1. คลังฐานข้อมูลกฎ Offline Rule-based สำรอง (Hybrid Pre-scan & Fallback)
+        // 1. คลังฐานข้อมูลกฎ Offline Smart Contextual & Fuzzy Engine (ทำงานได้ 100% แม้ไร้เน็ต)
         // ============================================================================
         const OFFLINE_MISSPELLINGS = {
             "อณุญาต": { correct: "อนุญาต", category: "สะกดผิด", group: "spelling", reason: "คำว่า 'อนุญาต' เขียนด้วย น หนู และไม่มีสระอิที่ ต เต่า" },
@@ -485,297 +490,51 @@
             "อารมย์": { correct: "อารมณ์", category: "ตัวการันต์ผิด", group: "spelling", reason: "ใช้ ณ เณร การันต์ เขียนว่า 'อารมณ์'" },
             "อุปสรรค์": { correct: "อุปสรรค", category: "ตัวการันต์ผิด", group: "spelling", reason: "ไม่มีตัวการันต์ เขียนว่า 'อุปสรรค'" },
             "ทำงา": { correct: "ทำงาน", category: "พิมพ์ตก", group: "spelling", reason: "พิมพ์ตัวสะกด 'น' ตกหล่น คำที่ถูกต้องตามบริบทคือ 'ทำงาน'" },
-            "กาวางแผง": { correct: "การวางแผน", category: "พิมพ์ตก/พิมพ์ผิด", group: "spelling", reason: "พิมพ์ตกตัวสะกด 'ร' ในคำว่า 'การ' และพิมพ์ 'แผน' ผิดเป็น 'แผง'" },
-            "นะค่ะ": { correct: "นะคะ", category: "ใส่วรรณยุกต์ผิด", group: "spelling", reason: "คำลงท้าย 'นะคะ' ออกเสียงตรี ไม่มีไม้เอก (คำว่า 'ค่ะ' ใช้กับคำตอบรับหรือ 'ขอบคุณค่ะ')" }
+            "สำนักงา": { correct: "สำนักงาน", category: "พิมพ์ตก", group: "spelling", reason: "พิมพ์ตัวสะกด 'น' ตกหล่น คำที่ถูกต้องคือ 'สำนักงาน'" },
+            "ราชกา": { correct: "ราชการ", category: "พิมพ์ตก", group: "spelling", reason: "พิมพ์ตัวสะกด 'ร' ตกหล่น คำที่ถูกต้องคือ 'ราชการ'" },
+            "เอกสา": { correct: "เอกสาร", category: "พิมพ์ตก", group: "spelling", reason: "พิมพ์ตัวสะกด 'ร' ตกหล่น คำที่ถูกต้องคือ 'เอกสาร'" },
+            "โครงกา": { correct: "โครงการ", category: "พิมพ์ตก", group: "spelling", reason: "พิมพ์ตัวสะกด 'ร' ตกหล่น คำที่ถูกต้องคือ 'โครงการ'" },
+            "บริกา": { correct: "บริการ", category: "พิมพ์ตก", group: "spelling", reason: "พิมพ์ตัวสะกด 'ร' ตกหล่น คำที่ถูกต้องคือ 'บริการ'" },
+            "จัดกา": { correct: "จัดการ", category: "พิมพ์ตก", group: "spelling", reason: "พิมพ์ตัวสะกด 'ร' ตกหล่น คำที่ถูกต้องคือ 'จัดการ'" },
+            "วาแผน": { correct: "วางแผน", category: "พิมพ์ตก", group: "spelling", reason: "พิมพ์ตัวสะกด 'ง' ตกหล่นในพยางค์แรก คำที่ถูกต้องคือ 'วางแผน'" },
+            "วางแผง": { correct: "วางแผน", category: "พิมพ์ผิด", group: "spelling", reason: "พิมพ์ตัวสะกดผิดจาก 'น' เป็น 'ง' คำที่ถูกต้องตามบริบทคือ 'วางแผน'" },
+            "กาวางแผง": { correct: "การวางแผน", category: "พิมพ์ตก", group: "spelling", reason: "พิมพ์ตกตัวสะกด 'ร' ในคำว่า 'การ' และพิมพ์ 'แผน' ผิดเป็น 'แผง'" },
+            "กาวางแผน": { correct: "การวางแผน", category: "พิมพ์ตก", group: "spelling", reason: "พิมพ์ตกตัวสะกด 'ร' ในคำนำหน้านาม 'การ'" },
+            "นะค่ะ": { correct: "นะคะ", category: "ใส่วรรณยุกต์ผิด", group: "spelling", reason: "คำลงท้าย 'นะคะ' ออกเสียงตรี ไม่มีไม้เอก (คำว่า 'ค่ะ' ใช้กับคำตอบรับหรือ 'ขอบคุณค่ะ')" },
+            "โน๊ต": { correct: "โน้ต", category: "ใส่วรรณยุกต์ผิด", group: "spelling", reason: "อักษรต่ำ (น) ผันด้วยไม้โท (้) ออกเสียงตรี ไม่ใช้ไม้ตรี (๊)" },
+            "เค๊ก": { correct: "เค้ก", category: "ใส่วรรณยุกต์ผิด", group: "spelling", reason: "อักษรต่ำ (ค) ผันด้วยไม้โท (้) ออกเสียงตรี เขียนว่า 'เค้ก'" },
+            "ช๊อปปิ้ง": { correct: "ช้อปปิ้ง", category: "ใส่วรรณยุกต์ผิด", group: "spelling", reason: "อักษรต่ำ (ช) ใช้ไม้โท (้) เขียนว่า 'ช้อปปิ้ง'" }
         };
 
-        // ============================================================================
-        // 2. State และตัวแปรจัดการระบบ
-        // ============================================================================
-        let currentIssues = []; // เก็บรายการจุดผิดทั้งหมด: { id, original, correct, category, group, reason, index, fixed }
-        let activeIssueId = null;
-        let activeFilterGroup = 'all';
-        let currentUploadedFileName = '';
-        let isAnalyzing = false;
-
-        let customDictionary = new Set(JSON.parse(localStorage.getItem('thaiSpellPro_customDict') || '[]'));
-        let checkHistory = JSON.parse(localStorage.getItem('thaiSpellPro_history') || '[]');
-
-        const inputTextEl = document.getElementById('inputText');
-        const resultDisplayEl = document.getElementById('resultDisplay');
-        const charCountEl = document.getElementById('charCount');
-        const customDictCountEl = document.getElementById('customDictCount');
-        const statusBannerEl = document.getElementById('statusBanner');
-        const wordPopoverEl = document.getElementById('wordPopover');
-        const dropZoneEl = document.getElementById('dropZone');
-
-        window.addEventListener('DOMContentLoaded', () => {
-            lucide.createIcons();
-            updateCustomDictCount();
-            renderHistory();
-            setupDragAndDrop();
-
-            inputTextEl.addEventListener('input', () => {
-                charCountEl.textContent = `${inputTextEl.value.length.toLocaleString()} ตัวอักษร`;
-            });
-
-            document.addEventListener('click', (e) => {
-                if (!wordPopoverEl.contains(e.target) && !e.target.closest('[data-issue-id]')) {
-                    closePopover();
-                }
-            });
-        });
-
-        // ============================================================================
-        // 3. ระบบอัปโหลดและอ่านไฟล์จริง: Word (.docx), Excel (.xlsx/.xls/.csv), PDF (.pdf), TXT
-        // ============================================================================
-        function setupDragAndDrop() {
-            ['dragenter', 'dragover'].forEach(evtName => {
-                dropZoneEl.addEventListener(evtName, (e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    dropZoneEl.classList.add('drop-zone-active');
-                });
-            });
-
-            ['dragleave', 'drop'].forEach(evtName => {
-                dropZoneEl.addEventListener(evtName, (e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    dropZoneEl.classList.remove('drop-zone-active');
-                });
-            });
-
-            dropZoneEl.addEventListener('drop', (e) => {
-                const files = e.dataTransfer.files;
-                if (files && files.length > 0) {
-                    processUploadedFile(files[0]);
-                }
-            });
-        }
-
-        function handleFileSelect(event) {
-            const file = event.target.files[0];
-            if (file) {
-                processUploadedFile(file);
-            }
-        }
-
-        async function processUploadedFile(file) {
-            const fileName = file.name;
-            const ext = fileName.split('.').pop().toLowerCase();
-            currentUploadedFileName = fileName.replace(/\.[^/.]+$/, '');
-
-            updateStatusBanner(`กำลังอ่านข้อมูลจากไฟล์ "${fileName}" กรุณารอสักครู่...`, 'loading');
-
-            try {
-                let extractedText = '';
-                let metaInfo = '';
-                let iconColor = 'bg-blue-700';
-
-                if (ext === 'docx') {
-                    if (typeof mammoth === 'undefined') throw new Error('ไลบรารีอ่านไฟล์ Word ยังโหลดไม่เสร็จ');
-                    const arrayBuffer = await file.arrayBuffer();
-                    const result = await mammoth.extractRawText({ arrayBuffer });
-                    extractedText = result.value;
-                    metaInfo = `ไฟล์ Microsoft Word (.docx) • ขนาด ${(file.size / 1024).toFixed(1)} KB`;
-                    iconColor = 'bg-blue-700';
-
-                } else if (['xlsx', 'xls', 'csv'].includes(ext)) {
-                    if (typeof XLSX === 'undefined') throw new Error('ไลบรารีอ่านไฟล์ Excel ยังโหลดไม่เสร็จ');
-                    const arrayBuffer = await file.arrayBuffer();
-                    const workbook = XLSX.read(arrayBuffer, { type: 'array' });
-                    const sheetNames = workbook.SheetNames;
-                    const sheetTexts = [];
-
-                    sheetNames.forEach(sheetName => {
-                        const worksheet = workbook.Sheets[sheetName];
-                        const rows = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: '' });
-                        const cleanedRows = rows
-                            .map(row => row.map(cell => String(cell).trim()).filter(Boolean).join('  '))
-                            .filter(line => line.trim().length > 0);
-                        if (cleanedRows.length > 0) {
-                            sheetTexts.push(`--- ชีต: ${sheetName} ---\n` + cleanedRows.join('\n'));
-                        }
-                    });
-
-                    extractedText = sheetTexts.join('\n\n');
-                    metaInfo = `ไฟล์ตาราง Excel (${ext.toUpperCase()}) • อ่านสำเร็จ ${sheetNames.length} ชีต`;
-                    iconColor = 'bg-emerald-600';
-
-                } else if (ext === 'pdf') {
-                    if (typeof pdfjsLib === 'undefined') throw new Error('ไลบรารีอ่านไฟล์ PDF ยังโหลดไม่เสร็จ');
-                    const arrayBuffer = await file.arrayBuffer();
-                    const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-                    const pageTexts = [];
-
-                    for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
-                        const page = await pdf.getPage(pageNum);
-                        const textContent = await page.getTextContent();
-                        let lastY = null;
-                        let pageStr = '';
-                        for (const item of textContent.items) {
-                            const currentY = item.transform ? item.transform[5] : null;
-                            if (lastY !== null && currentY !== null && Math.abs(currentY - lastY) > 6) {
-                                pageStr += '\n';
-                            } else if (pageStr && !pageStr.endsWith(' ') && !pageStr.endsWith('\n')) {
-                                pageStr += ' ';
-                            }
-                            pageStr += item.str;
-                            lastY = currentY;
-                        }
-                        if (pageStr.trim()) pageTexts.push(pageStr.trim());
-                    }
-
-                    extractedText = pageTexts.join('\n\n');
-                    metaInfo = `ไฟล์เอกสาร PDF • ดึงข้อความจากทั้งหมด ${pdf.numPages} หน้า`;
-                    iconColor = 'bg-rose-600';
-
-                } else if (ext === 'txt') {
-                    extractedText = await file.text();
-                    metaInfo = `ไฟล์ข้อความ (.txt) • ขนาด ${(file.size / 1024).toFixed(1)} KB`;
-                    iconColor = 'bg-slate-700';
-
-                } else {
-                    showToast('ไม่รองรับนามสกุลไฟล์นี้ กรุณาใช้ .docx, .xlsx, .xls, .csv, .pdf หรือ .txt', 'warning');
-                    return;
-                }
-
-                extractedText = normalizeThaiTextFromFile(extractedText);
-
-                if (!extractedText.trim()) {
-                    showToast('ไม่พบข้อความตัวอักษรในไฟล์นี้ (หากเป็น PDF แบบภาพสแกนจะไม่สามารถดึงข้อความได้)', 'warning');
-                    updateStatusBanner('ไม่พบข้อความตัวอักษรในไฟล์', 'warning');
-                    return;
-                }
-
-                document.getElementById('fileInfoBar').classList.remove('hidden');
-                document.getElementById('fileTypeIcon').className = `w-9 h-9 rounded-xl ${iconColor} text-white flex items-center justify-center shrink-0`;
-                document.getElementById('fileNameDisplay').textContent = fileName;
-                document.getElementById('fileMetaDisplay').textContent = metaInfo;
-                lucide.createIcons();
-
-                inputTextEl.value = extractedText;
-                charCountEl.textContent = `${extractedText.length.toLocaleString()} ตัวอักษร`;
-                await runFullAnalysis();
-
-            } catch (error) {
-                console.error('File parsing error:', error);
-                showToast(`เกิดข้อผิดพลาดในการอ่านไฟล์: ${error.message}`, 'warning');
-                updateStatusBanner(`ไม่สามารถอ่านไฟล์ได้: ${error.message}`, 'warning');
-            }
-        }
-
-        function clearUploadedFile() {
-            document.getElementById('fileInput').value = '';
-            document.getElementById('fileInfoBar').classList.add('hidden');
-            currentUploadedFileName = '';
-        }
-
-        function normalizeThaiTextFromFile(text) {
-            return text
-                .replace(/\u0E4D\u0E32/g, '\u0E33')
-                .replace(/\u0E4D([\u0E48-\u0E4B])\u0E32/g, '$1\u0E33')
-                .replace(/[\u200B-\u200D\uFEFF]/g, '')
-                .replace(/[ \t]{3,}/g, '  ');
-        }
-
-        // ============================================================================
-        // 4. ระบบวิเคราะห์แบบ Hybrid: Offline Pre-scan + Gemini AI Deep Proofreading
-        // ============================================================================
-        async function runFullAnalysis() {
-            if (isAnalyzing) return;
-            closePopover();
-
-            const fullText = inputTextEl.value;
-            charCountEl.textContent = `${fullText.length.toLocaleString()} ตัวอักษร`;
-
-            if (!fullText.trim()) {
-                currentIssues = [];
-                renderAnalysisResult();
-                updateStatusBanner('กรุณาพิมพ์ วางข้อความ หรืออัปโหลดไฟล์ก่อนกดปุ่มตรวจคำผิด', 'neutral');
-                return;
-            }
-
-            isAnalyzing = true;
-            setButtonLoading(true);
-
-            // ขั้นที่ 1: รัน Offline Rule-based Pre-scan ทันทีเพื่อให้ผู้ใช้เห็นผลเบื้องต้นโดยไม่ต้องรอ
-            const offlineIssues = runOfflineRuleScanner(fullText);
-            currentIssues = offlineIssues;
-            renderAnalysisResult();
-            updateStatusBanner('กำลังใช้ Gemini AI วิเคราะห์เชิงลึกทั้ง 10 หมวดหมู่ (คำพิมพ์ตก/เกิน สันธาน วรรณยุกต์ เว้นวรรค ไวยากรณ์)...', 'loading');
-
-            try {
-                // แบ่งข้อความเป็น Chunk หากยาวเกิน 3,500 ตัวอักษร เพื่อความแม่นยำสูงสุด
-                const chunks = splitTextIntoChunks(fullText, 3500);
-                let allAiIssues = [];
-
-                for (let cIdx = 0; cIdx < chunks.length; cIdx++) {
-                    const chunk = chunks[cIdx];
-                    if (chunks.length > 1) {
-                        updateStatusBanner(`กำลังวิเคราะห์ส่วนที่ ${cIdx + 1} จาก ${chunks.length} ส่วน ด้วย Gemini AI...`, 'loading');
-                    }
-                    const chunkResults = await analyzeChunkWithGemini(chunk.text, chunk.offset, fullText);
-                    allAiIssues = allAiIssues.concat(chunkResults);
-                }
-
-                // รวมผลลัพธ์จาก AI เข้ากับ Offline Rule-based โดยตัดรายการที่ซ้ำซ้อนหรืออยู่ในพจนานุกรมส่วนตัวออก
-                const mergedIssues = mergeAndDeduplicateIssues(fullText, allAiIssues, offlineIssues);
-                currentIssues = mergedIssues;
-                renderAnalysisResult();
-
-                const activeCount = currentIssues.filter(i => !i.fixed).length;
-                if (activeCount === 0) {
-                    updateStatusBanner('ยอดเยี่ยม! ไม่พบคำสะกดผิด คำพิมพ์ตก การเว้นวรรค หรือข้อผิดพลาดทางไวยากรณ์', 'success');
-                    setEngineBadge('Gemini AI วิเคราะห์เสร็จสมบูรณ์', 'emerald');
-                } else {
-                    updateStatusBanner(`วิเคราะห์เสร็จสมบูรณ์! พบจุดควรแก้ไขทั้งหมด ${activeCount} จุด คลิกที่คำไฮไลต์เพื่อดูคำแนะนำ`, 'warning');
-                    setEngineBadge('Gemini AI วิเคราะห์เสร็จสมบูรณ์', 'emerald');
-                }
-
-            } catch (error) {
-                console.warn('Gemini AI fallback to offline rules:', error);
-                // หากเครือข่ายขัดข้อง ใช้ผลจาก Offline Rule-based ที่รันไว้แล้วเป็น Fallback
-                const fallbackCount = currentIssues.filter(i => !i.fixed).length;
-                updateStatusBanner(`วิเคราะห์ด้วยระบบสำรองออฟไลน์เรียบร้อย (พบ ${fallbackCount} จุด) — หมายเหตุ: ระบบ AI ออนไลน์ขัดข้องชั่วคราว`, 'warning');
-                setEngineBadge('โหมดสำรองออฟไลน์', 'amber');
-            } finally {
-                isAnalyzing = false;
-                setButtonLoading(false);
-            }
-        }
-
-        // แบ่งข้อความยาวตามย่อหน้าเพื่อไม่ให้ตัดกลางคำ
-        function splitTextIntoChunks(text, maxLen) {
-            if (text.length <= maxLen) {
-                return [{ text, offset: 0 }];
-            }
-            const chunks = [];
-            let currentOffset = 0;
-            while (currentOffset < text.length) {
-                let end = Math.min(currentOffset + maxLen, text.length);
-                if (end < text.length) {
-                    const lastNewline = text.lastIndexOf('\n', end);
-                    const lastSpace = text.lastIndexOf(' ', end);
-                    if (lastNewline > currentOffset + maxLen * 0.6) {
-                        end = lastNewline + 1;
-                    } else if (lastSpace > currentOffset + maxLen * 0.6) {
-                        end = lastSpace + 1;
-                    }
-                }
-                chunks.push({
-                    text: text.slice(currentOffset, end),
-                    offset: currentOffset
-                });
-                currentOffset = end;
-            }
-            return chunks;
-        }
-
+        // คลังคำศัพท์ภาษาไทยมาตรฐานสำหรับระบบ Fuzzy Matching & Edit Distance (ตรวจจับคำที่ไม่ปรากฏในพจนานุกรม)
+        const THAI_LEXICON = [
+            "การ", "งาน", "ทำงาน", "การทำงาน", "วางแผน", "การวางแผน", "แผนงาน", "โครงการ", "ดำเนิน", "ดำเนินการ",
+            "บริหาร", "การบริหาร", "จัดการ", "การจัดการ", "บริการ", "การบริการ", "พัฒนา", "การพัฒนา", "ปรับปรุง",
+            "ตรวจสอบ", "การตรวจสอบ", "สอบสวน", "การสอบสวน", "พิจารณา", "การพิจารณา", "อนุมัติ", "ขออนุมัติ",
+            "อนุญาต", "ขออนุญาต", "ปฏิบัติ", "การปฏิบัติ", "ปฏิบัติงาน", "ระเบียบ", "กฎระเบียบ", "กฎหมาย", "มาตรฐาน",
+            "คุณภาพ", "ประสิทธิภาพ", "ประสิทธิผล", "องค์กร", "หน่วยงาน", "สำนักงาน", "ราชการ", "ข้าราชการ", "ตำรวจ",
+            "ศูนย์ฝึกอบรม", "ฝ่ายปกครอง", "ฝ่ายอำนวยการ", "หนังสือ", "เอกสาร", "บันทึก", "ข้อความ", "รายงาน", "สรุป",
+            "งบประมาณ", "พัสดุ", "จำหน่าย", "จัดซื้อ", "จัดจ้าง", "คณะกรรมการ", "ประธาน", "กรรมการ", "เลขานุการ",
+            "เจ้าหน้าที่", "บุคลากร", "ผู้บังคับการ", "ผู้กำกับการ", "สารวัตร", "รองสารวัตร", "ผู้หมวด", "ดาบตำรวจ",
+            "พลตำรวจ", "พันตำรวจโท", "พันตำรวจเอก", "พลตำรวจตรี", "พลตำรวจโท", "พลตำรวจเอก", "สังเกต", "ปรากฏ",
+            "โอกาส", "ศีรษะ", "เซ็น", "เซ็นชื่อ", "ลายเซ็น", "สัปดาห์", "ประณีต", "กะเพรา", "กะทันหัน", "รสชาติ",
+            "อัปเดต", "เว็บไซต์", "เว็บ", "อีเมล", "อินเทอร์เน็ต", "เกษียณอายุ", "คำนวณ", "เจตนารมณ์", "บันเทิง",
+            "บรรยากาศ", "ปาฏิหาริย์", "ปฏิเสธ", "ผูกพัน", "ราษฎร", "รื่นรมย์", "ลำไย", "สถานการณ์", "หลงใหล",
+            "อานิสงส์", "อารมณ์", "อุปสรรค", "ความสำเร็จ", "ระยะยาว", "ระยะสั้น", "เป้าหมาย", "วัตถุประสงค์", "หลักการ",
+            "เหตุผล", "วิธีการ", "ขั้นตอน", "แนวทาง", "นโยบาย", "ยุทธศาสตร์", "แผนปฏิบัติการ", "ตัวชี้วัด", "ผลลัพธ์",
+            "ความรับผิดชอบ", "หน้าที่", "อำนาจ", "คำสั่ง", "ประกาศ", "ข้อบังคับ", "มติ", "ที่ประชุม", "การประชุม",
+            "สัมมนา", "อบรม", "ฝึกอบรม", "วิทยากร", "ผู้ทรงคุณวุฒิ", "ความรู้", "ความเข้าใจ", "ความชำนาญ", "ประสบการณ์",
+            "ทักษะ", "ศักยภาพ", "ความสามารถ", "ความร่วมมือ", "ประสานงาน", "การประสานงาน", "ติดตาม", "ประเมินผล",
+            "แก้ไข", "ปัญหา", "อุปสรรค", "ข้อผิดพลาด", "คลาดเคลื่อน", "บกพร่อง", "เสียหาย", "เสื่อมสภาพ", "ชำรุด",
+            "ซ่อมแซม", "บำรุงรักษา", "ตรวจสอบ", "รับรอง", "ยืนยัน", "ชี้แจง", "อธิบาย", "เสนอแนะ", "แนะนำ",
+            "ที่ไม่มี", "ที่ดี", "อย่างยิ่ง", "อย่างเต็มที่", "โดยเร็ว", "ทันที", "สม่ำเสมอ", "ต่อเนื่อง", "ชัดเจน",
+            "ถูกต้อง", "ครบถ้วน", "สมบูรณ์", "เรียบร้อย", "รอบคอบ", "ระมัดระวัง", "โปร่งใส", "เป็นธรรม", "เหมาะสม"
+        ];
+        const THAI_LEXICON_SET = new Set(THAI_LEXICON);
+// ... existing code ... -->
         // เรียกใช้งาน Gemini API พร้อม Structured JSON Schema และ Exponential Backoff
         async function analyzeChunkWithGemini(chunkText, chunkOffset, fullText) {
-            const apiKey = "";
+            const apiKey = (typeof window !== 'undefined' && window.__gemini_api_key) ? window.__gemini_api_key : "";
             const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
 
             const systemPrompt = `คุณคือผู้เชี่ยวชาญด้านภาษาไทยและบรรณาธิการหนังสือราชการระดับสูง (อ้างอิงตามหลักเกณฑ์สำนักงานราชบัณฑิตยสภา)
@@ -784,65 +543,227 @@
 2. "สะกดผิด" (คำที่สะกดผิดจากพจนานุกรมราชบัณฑิตยสถาน เช่น อณุญาติ -> อนุญาต, สังเกตุ -> สังเกต, กฏหมาย -> กฎหมาย)
 3. "เว้นวรรคผิด" (เช่น ไม่เว้นวรรคหน้า/หลังไม้ยมก 'ๆ' เช่น 'ต่าง ๆ', เว้นวรรคผิดที่กลางคำ หรือติดกันเกินไปในประโยคราชการ)
 4. "ตัวการันต์ผิด" (เช่น เซ็นต์ -> เซ็น, สัปห์ดา -> สัปดาห์, อารมย์ -> อารมณ์)
-5. "พิมพ์ตก" (พิมพ์พยัญชนะ สระ หรือตัวสะกดตกหล่น เช่น 'การทำงา' -> 'การทำงาน', 'กาวางแผง' -> 'การวางแผน')
+5. "พิมพ์ตก" (พิมพ์พยัญชนะ สระ หรือตัวสะกดตกหล่น เช่น 'กา ทำงา' -> 'การทำงาน', 'วาแผน' -> 'วางแผน', 'กาวางแผง' -> 'การวางแผน')
 6. "พิมพ์เกิน" (พิมพ์ตัวอักษร สระ หรือวรรณยุกต์เกินมา เช่น 'มาตราฐาน' -> 'มาตรฐาน', 'เเ' -> 'แ')
-7. "ใส่วรรณยุกต์ผิด" (ผันวรรณยุกต์ผิดความหมาย เช่น นะค่ะ -> นะคะ, คะ/ค่ะ สลับกัน, ป่า/ป้า)
+7. "ใส่วรรณยุกต์ผิด" (ผันวรรณยุกต์ผิดความหมาย เช่น นะค่ะ -> นะคะ, คะ/ค่ะ สลับกัน, โน๊ต -> โน้ต)
 8. "ใช้คำสันธานผิด" (เช่น ใช้ 'เพราะว่า...จึง...' ซ้ำซ้อนเกินจำเป็นในภาษาเขียน, 'ถึงแม้ว่า...แต่...', 'เนื่องจาก...ดังนั้น...')
 9. "คำเชื่อมผิด" (ใช้คำเชื่อมหรือบุพบทผิดความหมาย เช่น 'กับ/แก่/แด่/ต่อ', 'เพื่อ/สำหรับ', 'และ/หรือ')
 10. "ผิดไวยากรณ์" (รูปประโยคไม่สมบูรณ์ ประธาน-กริยา-กรรมขาดหาย หรือใช้ภาษาพูดปนในเอกสารราชการ)
+        // ระบบตรวจจับ Offline Smart Contextual & Fuzzy Engine (ทำงานทันที + รองรับโหมดออฟไลน์ 100%)
+        function runOfflineRuleScanner(text) {
+            const issues = [];
+            const usedRanges = [];
 
-กฎสำคัญในการตอบ:
-- ฟิลด์ "original" ต้องตรงกับข้อความย่อยที่มีอยู่ในต้นฉบับทุกตัวอักษร (Exact substring match) รวมถึงช่องว่างหากเป็นเรื่องการเว้นวรรค
-- ฟิลด์ "correct" คือข้อความที่แก้ไขให้ถูกต้องแล้ว (หากเป็นเรื่องเว้นวรรคให้ใส่ช่องว่างที่ถูกต้องใน "correct")
-- ฟิลด์ "category" ต้องเลือกใช้ชื่อหมวดหมู่ 1 ใน 10 ชื่อข้างต้นเท่านั้น
-- ฟิลด์ "reason" อธิบายเหตุผลตามหลักภาษาไทยอย่างชัดเจน กระชับ เข้าใจง่าย
-- ห้ามแจ้งเตือนคำที่สะกดถูกต้องตามพจนานุกรมและถูกต้องตามบริบทแล้วเด็ดขาด (เช่น คำราชการ 'ฝ่ายปกครองและฝึก', 'ศูนย์ฝึกอบรมตำรวจภูธรภาค 2', 'จำหน่าย', 'พัสดุ' หากเขียนถูกอยู่แล้วห้ามจับผิด)`;
+            const addIssueIfFree = (start, original, correct, category, group, reason) => {
+                if (!original || !correct || original === correct) return;
+                if (customDictionary.has(original.trim())) return;
+                const end = start + original.length;
+                const overlaps = usedRanges.some(r => !(end <= r.start || start >= r.end));
+                if (!overlaps) {
+                    usedRanges.push({ start, end });
+                    issues.push({
+                        id: 'off_' + Math.random().toString(36).slice(2, 9),
+                        original,
+                        correct,
+                        category,
+                        group,
+                        reason,
+                        index: start,
+                        fixed: false
+                    });
+                }
+            };
 
-            const payload = {
-                contents: [{
-                    parts: [{
-                        text: `กรุณาตรวจวิเคราะห์ข้อผิดพลาดภาษาไทยทั้ง 10 หมวดหมู่จากข้อความต่อไปนี้:\n\n"""\n${chunkText}\n"""`
-                    }]
-                }],
-                systemInstruction: {
-                    parts: [{ text: systemPrompt }]
-                },
-                generationConfig: {
-                    temperature: 0.1,
-                    responseMimeType: "application/json",
-                    responseSchema: {
-                        type: "ARRAY",
-                        description: "รายการจุดที่พบข้อผิดพลาดในข้อความ",
-                        items: {
-                            type: "OBJECT",
-                            properties: {
-                                original: {
-                                    type: "STRING",
-                                    description: "ข้อความเดิมที่ผิด (ต้องตรงกับต้นฉบับทุกตัวอักษร)"
-                                },
-                                correct: {
-                                    type: "STRING",
-                                    description: "ข้อความที่แก้ไขให้ถูกต้องแล้ว"
-                                },
-                                category: {
-                                    type: "STRING",
-                                    enum: [
-                                        "พิมพ์ผิด",
-                                        "สะกดผิด",
-                                        "เว้นวรรคผิด",
-                                        "ตัวการันต์ผิด",
-                                        "พิมพ์ตก",
-                                        "พิมพ์เกิน",
-                                        "ใส่วรรณยุกต์ผิด",
-                                        "ใช้คำสันธานผิด",
-                                        "คำเชื่อมผิด",
-                                        "ผิดไวยากรณ์"
-                                    ]
-                                },
-                                reason: {
-                                    type: "STRING",
-                                    description: "คำอธิบายเหตุผลตามหลักภาษาไทย"
-                                }
+            let m;
+
+            // 1. ตรวจจับบริบทคำนำหน้านาม "การ" ที่พิมพ์ตก ร เรือ เป็น "กา" (เช่น "กา ทำงา", "กาทำงาน", "กาวางแผน")
+            const missingRorInKarnRegex = /(^|[\s\n("'])(กา)(\s*)([\u0E00-\u0E7F]{2,})/g;
+            while ((m = missingRorInKarnRegex.exec(text)) !== null) {
+                const prefixSpace = m[1];
+                const gaWord = m[2];
+                const midSpace = m[3];
+                const nextWord = m[4];
+                const gaStart = m.index + prefixSpace.length;
+
+                // ข้ามคำที่เป็นคำแท้ขึ้นต้นด้วย "กา" เช่น กาแฟ, กาชาด, กาละเทศะ, กากบาท, กาพย์, กาฝาก
+                const validGaPrefixes = ['กาแฟ', 'กาชาด', 'กาละ', 'กาก', 'กาพย์', 'กาฝาก', 'กาง', 'กาว', 'กาต้ม', 'กาหลง', 'กาเหว่า'];
+                const fullCombined = gaWord + nextWord;
+                if (!validGaPrefixes.some(vp => fullCombined.startsWith(vp))) {
+                    if (midSpace.length > 0) {
+                        addIssueIfFree(
+                            gaStart,
+                            gaWord + midSpace,
+                            'การ',
+                            'พิมพ์ตก / เว้นวรรคผิด',
+                            'spelling',
+                            `พิมพ์ตัวสะกด 'ร' ตกหล่นในคำนำหน้านาม 'การ' และไม่ควรเว้นวรรคระหว่างคำว่า 'การ' กับคำกริยา/นามที่ตามหลัง`
+                        );
+                    } else {
+                        addIssueIfFree(
+                            gaStart,
+                            gaWord,
+                            'การ',
+                            'พิมพ์ตก',
+                            'spelling',
+                            `พิมพ์ตัวสะกด 'ร' ตกหล่น คำนำหน้านามที่ถูกต้องตามบริบทคือ 'การ'`
+                        );
+                    }
+                }
+            }
+
+            // 2. ตรวจจับคำว่า "การ" ที่เว้นวรรคแยกออกจากคำกริยาที่ตามหลัง (เช่น "การ ทำงาน")
+            const spacedKarnRegex = /(^|[\s\n("'])(การ)(\s+)([\u0E00-\u0E7F]{2,})/g;
+            while ((m = spacedKarnRegex.exec(text)) !== null) {
+                const karnStart = m.index + m[1].length;
+                addIssueIfFree(
+                    karnStart,
+                    m[2] + m[3],
+                    'การ',
+                    'เว้นวรรคผิด',
+                    'spacing',
+                    'คำว่า "การ" เป็นคำนำหน้านาม ต้องเขียนติดกับคำที่ตามหลังโดยไม่เว้นวรรค'
+                );
+            }
+
+            // 3. ตรวจจับไม้ยมก (ๆ) ที่ติดกับคำหน้าโดยไม่เว้นวรรค
+            const maiYamokRegex = /([\u0E00-\u0E7F]+)(ๆ)/g;
+            while ((m = maiYamokRegex.exec(text)) !== null) {
+                addIssueIfFree(
+                    m.index,
+                    m[0],
+                    `${m[1]} ๆ`,
+                    'เว้นวรรคผิด',
+                    'spacing',
+                    'ตามหลักสำนักงานราชบัณฑิตยสภา ต้องเว้นวรรค 1 เคาะข้างหน้าและข้างหลังเครื่องหมายไม้ยมก (ๆ) เสมอ'
+                );
+            }
+
+            // 4. ตรวจจับสระเอซ้อน 2 ตัว (เเ) แทนสระแอ (แ)
+            const doubleERegex = /[\u0E00-\u0E7F]*เเ[\u0E00-\u0E7F]*/g;
+            while ((m = doubleERegex.exec(text)) !== null) {
+                addIssueIfFree(
+                    m.index,
+                    m[0],
+                    m[0].replace(/เเ/g, 'แ'),
+                    'พิมพ์เกิน',
+                    'spelling',
+                    'พิมพ์สระเอ (เ) ซ้อนกัน 2 ตัว แทนที่จะใช้สระแอ (แ)'
+                );
+            }
+
+            // 5. ตรวจจับวรรณยุกต์ซ้อนติดกัน 2 ตัว
+            const doubleToneRegex = /[\u0E00-\u0E7F]*[\u0E48-\u0E4B]{2,}[\u0E00-\u0E7F]*/g;
+            while ((m = doubleToneRegex.exec(text)) !== null) {
+                addIssueIfFree(
+                    m.index,
+                    m[0],
+                    m[0].replace(/([\u0E48-\u0E4B])[\u0E48-\u0E4B]+/g, '$1'),
+                    'ใส่วรรณยุกต์ผิด',
+                    'spelling',
+                    'พบวรรณยุกต์พิมพ์ซ้อนกัน 2 ตัวในคำเดียวกัน'
+                );
+            }
+
+            // 6. ตรวจจับการใช้คำสันธานซ้ำซ้อน (เพราะว่า...จึง..., ถึงแม้ว่า...แต่...)
+            const redundantConjRegex1 = /(เพราะว่า|เนื่องจาก)([^\n.]{2,60}?)(จึงทำให้|จึง)/g;
+            while ((m = redundantConjRegex1.exec(text)) !== null) {
+                addIssueIfFree(
+                    m.index,
+                    m[1],
+                    m[1] === 'เพราะว่า' ? 'เพราะ' : 'เนื่องจาก',
+                    'ใช้คำสันธานผิด',
+                    'grammar',
+                    `การใช้สันธาน "${m[1]}...${m[3]}" มีความหมายซ้ำซ้อน ในภาษาเขียนที่เป็นทางการนิยมตัด "ว่า" หรือเลือกใช้คำเชื่อมเพียงตัวเดียว`
+                );
+            }
+
+            const redundantConjRegex2 = /(ถึงแม้ว่า)([^\n.]{2,60}?)(แต่ทว่า|แต่)/g;
+            while ((m = redundantConjRegex2.exec(text)) !== null) {
+                addIssueIfFree(
+                    m.index,
+                    m[3],
+                    '',
+                    'ใช้คำสันธานผิด',
+                    'grammar',
+                    `เมื่อใช้คำสันธานแสดงความขัดแย้ง "${m[1]}" นำหน้าประโยคแล้ว ไม่จำเป็นต้องใช้ "${m[3]}" ซ้ำอีก`
+                );
+            }
+
+            // 7. ตรวจจับคำในฐานข้อมูลคำผิด/พิมพ์ตกยอดฮิต
+            for (const [wrongWord, info] of Object.entries(OFFLINE_MISSPELLINGS)) {
+                let searchIdx = 0;
+                while (searchIdx < text.length) {
+                    const idx = text.indexOf(wrongWord, searchIdx);
+                    if (idx === -1) break;
+                    addIssueIfFree(idx, wrongWord, info.correct, info.category, info.group, info.reason);
+                    searchIdx = idx + wrongWord.length;
+                }
+            }
+
+            // 8. ตรวจจับคำที่ไม่รู้จักด้วย Intl.Segmenter + Damerau-Levenshtein Fuzzy Match (ระยะห่าง 1 ตัวอักษร)
+            if (typeof Intl !== 'undefined' && Intl.Segmenter) {
+                const segmenter = new Intl.Segmenter('th', { granularity: 'word' });
+                const segments = segmenter.segment(text);
+                for (const seg of segments) {
+                    const word = seg.segment;
+                    if (!seg.isWordLike || word.length < 4 || !/^[\u0E00-\u0E7F]+$/.test(word)) continue;
+                    if (THAI_LEXICON_SET.has(word) || OFFLINE_MISSPELLINGS[word]) continue;
+
+                    // หาคำในคลังคำศัพท์ที่มี Edit Distance เท่ากับ 1 (พิมพ์ตก/พิมพ์เกิน/พิมพ์สลับ 1 ตัว)
+                    const closeMatch = findClosestThaiWord(word);
+                    if (closeMatch) {
+                        const diffType = word.length < closeMatch.length ? 'พิมพ์ตก'
+                            : word.length > closeMatch.length ? 'พิมพ์เกิน' : 'พิมพ์ผิด';
+                        addIssueIfFree(
+                            seg.index,
+                            word,
+                            closeMatch,
+                            diffType,
+                            'spelling',
+                            `ตรวจพบความคลาดเคลื่อนของตัวอักษรจากคำมาตรฐาน "${closeMatch}" (${diffType} 1 ตำแหน่ง)`
+                        );
+                    }
+                }
+            }
+
+            return issues.sort((a, b) => a.index - b.index);
+        }
+
+        // คำนวณระยะห่างความต่างของตัวอักษร (Damerau-Levenshtein Distance)
+        function findClosestThaiWord(word) {
+            let bestWord = null;
+            let bestDist = 2; // รับเฉพาะคำที่ต่างกันไม่เกิน 1 ตัวอักษรเพื่อความแม่นยำสูง
+
+            for (const candidate of THAI_LEXICON) {
+                if (Math.abs(candidate.length - word.length) > 1) continue;
+                // พยัญชนะ/สระตัวแรกควรตรงกันเพื่อป้องกันการจับคู่ผิดคำ
+                if (candidate[0] !== word[0]) continue;
+
+                const dist = levenshteinDistance(word, candidate);
+                if (dist === 1 && dist < bestDist) {
+                    bestDist = dist;
+                    bestWord = candidate;
+                }
+            }
+            return bestWord;
+        }
+
+        function levenshteinDistance(a, b) {
+            const dp = Array.from({ length: a.length + 1 }, () => Array(b.length + 1).fill(0));
+            for (let i = 0; i <= a.length; i++) dp[i][0] = i;
+            for (let j = 0; j <= b.length; j++) dp[0][j] = j;
+            for (let i = 1; i <= a.length; i++) {
+                for (let j = 1; j <= b.length; j++) {
+                    const cost = a[i - 1] === b[j - 1] ? 0 : 1;
+                    dp[i][j] = Math.min(
+                        dp[i - 1][j] + 1,
+                        dp[i][j - 1] + 1,
+                        dp[i - 1][j - 1] + cost
+                    );
+                }
+            }
+            return dp[a.length][b.length];
+        }
                             },
                             required: ["original", "correct", "category", "reason"]
                         }
@@ -1023,447 +944,13 @@
         }
 
         // ============================================================================
-        // 5. การเรนเดอร์ผลลัพธ์ ตัวกรองหมวดหมู่ และรายการจุดผิดทั้งหมด
+        // 8. ปุ่มทดสอบสำเร็จรูป 4 แบบตามที่กำหนด
         // ============================================================================
-        function renderAnalysisResult() {
-            const fullText = inputTextEl.value;
-            updateCategoryCounts();
-
-            if (!fullText.trim()) {
-                resultDisplayEl.innerHTML = `
-                    <div class="h-48 flex flex-col items-center justify-center text-slate-400 text-center">
-                        <i data-lucide="file-search" class="w-10 h-10 mb-2 opacity-40"></i>
-                        <p class="text-sm">ผลลัพธ์การวิเคราะห์คำผิดและไวยากรณ์จะแสดงในพื้นที่นี้</p>
-                    </div>`;
-                document.getElementById('issueListContainer').classList.add('hidden');
-                lucide.createIcons();
-                return;
-            }
-
-            // กรองรายการตามแท็บตัวกรองที่เลือก
-            const visibleIssues = currentIssues.filter(issue => {
-                if (activeFilterGroup === 'all') return true;
-                return issue.group === activeFilterGroup;
-            });
-
-            // สร้าง DOM โดยไล่เรียงตามตำแหน่ง index ใน fullText
-            const fragment = document.createDocumentFragment();
-            let cursor = 0;
-
-            for (const issue of visibleIssues) {
-                // ข้อความปกติก่อนถึงจุดไฮไลต์
-                if (issue.index > cursor) {
-                    fragment.appendChild(document.createTextNode(fullText.slice(cursor, issue.index)));
-                }
-
-                // สร้าง Span ไฮไลต์
-                const span = document.createElement('span');
-                span.setAttribute('data-issue-id', issue.id);
-
-                if (issue.fixed) {
-                    span.className = 'hl-fixed';
-                    span.textContent = issue.correct;
-                    span.title = `แก้ไขแล้ว (${issue.category})`;
-                } else {
-                    const groupClass = {
-                        spelling: 'hl-spelling',
-                        grammar: 'hl-grammar',
-                        spacing: 'hl-spacing'
-                    }[issue.group] || 'hl-spelling';
-
-                    span.className = groupClass;
-                    span.textContent = issue.original;
-                    span.title = `[${issue.category}] คลิกเพื่อแก้เป็น "${issue.correct}"`;
-                    span.onclick = (e) => openIssuePopover(e, issue.id);
-                }
-
-                fragment.appendChild(span);
-                cursor = issue.index + (issue.fixed ? issue.correct.length : issue.original.length);
-            }
-
-            if (cursor < fullText.length) {
-                fragment.appendChild(document.createTextNode(fullText.slice(cursor)));
-            }
-
-            resultDisplayEl.innerHTML = '';
-            resultDisplayEl.appendChild(fragment);
-
-            renderIssueListCards();
-        }
-
-        function renderIssueListCards() {
-            const container = document.getElementById('issueListContainer');
-            const listEl = document.getElementById('issueListCards');
-            const activeIssues = currentIssues.filter(i => !i.fixed && (activeFilterGroup === 'all' || i.group === activeFilterGroup));
-
-            if (activeIssues.length === 0) {
-                container.classList.add('hidden');
-                return;
-            }
-
-            container.classList.remove('hidden');
-            listEl.innerHTML = activeIssues.map(issue => {
-                const badgeStyles = {
-                    spelling: 'bg-red-100 text-red-700 border-red-200',
-                    grammar: 'bg-purple-100 text-purple-700 border-purple-200',
-                    spacing: 'bg-orange-100 text-orange-700 border-orange-200'
-                }[issue.group];
-
-                return `
-                    <div class="p-3 rounded-xl bg-slate-50 hover:bg-blue-50/60 border border-slate-200/80 flex items-start justify-between gap-2.5 transition-all">
-                        <div class="min-w-0 flex-1">
-                            <span class="inline-block px-2 py-0.5 rounded-md text-[10px] font-semibold border ${badgeStyles} mb-1">
-                                ${escapeHtml(issue.category)}
-                            </span>
-                            <div class="text-xs sm:text-sm font-medium text-slate-800 break-words">
-                                <span class="line-through text-red-600/80">${escapeHtml(issue.original)}</span>
-                                <span class="mx-1 text-slate-400">→</span>
-                                <span class="font-bold text-emerald-700">${escapeHtml(issue.correct)}</span>
-                            </div>
-                            <p class="text-[11px] text-slate-500 mt-0.5 line-clamp-2">${escapeHtml(issue.reason)}</p>
-                        </div>
-                        <button onclick="applySingleFixById('${issue.id}')" type="button" class="px-2.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold shrink-0 cursor-pointer shadow-xs">
-                            แก้
-                        </button>
-                    </div>
-                `;
-            }).join('');
-        }
-
-        function updateCategoryCounts() {
-            const unfixed = currentIssues.filter(i => !i.fixed);
-            const spellingCnt = unfixed.filter(i => i.group === 'spelling').length;
-            const grammarCnt = unfixed.filter(i => i.group === 'grammar').length;
-            const spacingCnt = unfixed.filter(i => i.group === 'spacing').length;
-
-            document.getElementById('statSpelling').textContent = spellingCnt;
-            document.getElementById('statGrammar').textContent = grammarCnt;
-            document.getElementById('statSpacing').textContent = spacingCnt;
-
-            document.getElementById('count-all').textContent = unfixed.length;
-            document.getElementById('count-spelling').textContent = spellingCnt;
-            document.getElementById('count-grammar').textContent = grammarCnt;
-            document.getElementById('count-spacing').textContent = spacingCnt;
-        }
-
-        function setFilterGroup(group) {
-            activeFilterGroup = group;
-            ['all', 'spelling', 'grammar', 'spacing'].forEach(g => {
-                const btn = document.getElementById(`filter-${g}`);
-                if (g === group) {
-                    btn.classList.add('ring-2', 'ring-offset-1', 'ring-blue-700', 'font-bold');
-                } else {
-                    btn.classList.remove('ring-2', 'ring-offset-1', 'ring-blue-700', 'font-bold');
-                }
-            });
-            renderAnalysisResult();
-        }
-
-        // ============================================================================
-        // 6. Popover แก้ไขรายจุด & แก้ไขทั้งหมดอัตโนมัติ
-        // ============================================================================
-        function openIssuePopover(event, issueId) {
-            event.stopPropagation();
-            const issue = currentIssues.find(i => i.id === issueId);
-            if (!issue || issue.fixed) return;
-
-            activeIssueId = issueId;
-            const badgeEl = document.getElementById('popoverBadge');
-            const badgeStyles = {
-                spelling: 'bg-red-100 text-red-700',
-                grammar: 'bg-purple-100 text-purple-700',
-                spacing: 'bg-orange-100 text-orange-700'
-            }[issue.group] || 'bg-red-100 text-red-700';
-
-            badgeEl.className = `inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold ${badgeStyles}`;
-            badgeEl.textContent = issue.category;
-
-            document.getElementById('popoverOriginalWord').textContent = issue.original;
-            document.getElementById('popoverReasonBox').textContent = issue.reason;
-            document.getElementById('popoverCorrectWord').textContent = `เปลี่ยนเป็น "${issue.correct}"`;
-
-            document.getElementById('popoverFixBtn').onclick = () => {
-                applySingleFixById(issue.id);
-            };
-
-            document.getElementById('popoverIgnoreBtn').onclick = () => {
-                ignoreIssueAndAddCustomDict(issue);
-            };
-
-            wordPopoverEl.classList.remove('hidden');
-            const rect = event.target.getBoundingClientRect();
-            const popRect = wordPopoverEl.getBoundingClientRect();
-
-            let top = rect.bottom + 8;
-            let left = rect.left;
-
-            if (left + popRect.width > window.innerWidth - 16) {
-                left = window.innerWidth - popRect.width - 16;
-            }
-            if (left < 16) left = 16;
-            if (top + popRect.height > window.innerHeight - 16) {
-                top = rect.top - popRect.height - 8;
-            }
-
-            wordPopoverEl.style.top = `${Math.max(16, top)}px`;
-            wordPopoverEl.style.left = `${left}px`;
-            lucide.createIcons();
-        }
-
-        function closePopover() {
-            wordPopoverEl.classList.add('hidden');
-            activeIssueId = null;
-        }
-
-        function applySingleFixById(issueId) {
-            const targetIdx = currentIssues.findIndex(i => i.id === issueId);
-            if (targetIdx === -1) return;
-
-            const issue = currentIssues[targetIdx];
-            if (issue.fixed) return;
-
-            const fullText = inputTextEl.value;
-            const before = fullText.slice(0, issue.index);
-            const after = fullText.slice(issue.index + issue.original.length);
-            const updatedText = before + issue.correct + after;
-
-            const lengthDiff = issue.correct.length - issue.original.length;
-            issue.fixed = true;
-
-            // เลื่อนตำแหน่ง index ของจุดผิดถัดไปทั้งหมดตามความยาวตัวอักษรที่เปลี่ยนไป
-            for (let i = targetIdx + 1; i < currentIssues.length; i++) {
-                currentIssues[i].index += lengthDiff;
-            }
-
-            inputTextEl.value = updatedText;
-            charCountEl.textContent = `${updatedText.length.toLocaleString()} ตัวอักษร`;
-            closePopover();
-            renderAnalysisResult();
-            showToast(`แก้ไขเป็น "${issue.correct}" เรียบร้อย`, 'success');
-        }
-
-        function fixAllIssues() {
-            const unfixedIssues = currentIssues.filter(i => !i.fixed);
-            if (unfixedIssues.length === 0) {
-                showToast('ไม่พบจุดผิดที่ต้องแก้ไขแล้ว', 'info');
-                return;
-            }
-
-            // แก้ไขจากหลังมาหน้าเพื่อไม่ให้ index คลาดเคลื่อน
-            let text = inputTextEl.value;
-            const sortedDesc = [...currentIssues].sort((a, b) => b.index - a.index);
-
-            let fixedCount = 0;
-            for (const issue of sortedDesc) {
-                if (!issue.fixed) {
-                    text = text.slice(0, issue.index) + issue.correct + text.slice(issue.index + issue.original.length);
-                    issue.fixed = true;
-                    fixedCount++;
-                }
-            }
-
-            // คำนวณ index ใหม่จากหน้าไปหลังสำหรับแสดงไฮไลต์สีเขียว
-            let cumulativeShift = 0;
-            currentIssues.sort((a, b) => a.index - b.index).forEach(issue => {
-                issue.index += cumulativeShift;
-                cumulativeShift += (issue.correct.length - issue.original.length);
-            });
-
-            inputTextEl.value = text;
-            charCountEl.textContent = `${text.length.toLocaleString()} ตัวอักษร`;
-            closePopover();
-            renderAnalysisResult();
-            updateStatusBanner(`🪄 แก้ไขจุดผิดทั้งหมด ${fixedCount} จุดอัตโนมัติเรียบร้อยแล้ว!`, 'success');
-            showToast(`🪄 แก้ไขจุดผิดทั้งหมด ${fixedCount} จุดสำเร็จ`, 'success');
-        }
-
-        function ignoreIssueAndAddCustomDict(issue) {
-            const cleanWord = issue.original.trim();
-            if (cleanWord) {
-                customDictionary.add(cleanWord);
-                localStorage.setItem('thaiSpellPro_customDict', JSON.stringify(Array.from(customDictionary)));
-                updateCustomDictCount();
-            }
-            currentIssues = currentIssues.filter(i => i.original.trim() !== cleanWord);
-            closePopover();
-            renderAnalysisResult();
-            showToast(`เพิ่ม "${cleanWord}" ลงพจนานุกรมส่วนตัวแล้ว`, 'info');
-        }
-
-        function clearCustomDictionary() {
-            if (customDictionary.size === 0) {
-                showToast('ไม่มีคำในพจนานุกรมส่วนตัว', 'info');
-                return;
-            }
-            customDictionary.clear();
-            localStorage.removeItem('thaiSpellPro_customDict');
-            updateCustomDictCount();
-            showToast('ล้างรายการคำที่ละเว้นเรียบร้อย', 'info');
-        }
-
-        function updateCustomDictCount() {
-            customDictCountEl.textContent = customDictionary.size;
-        }
-
-        // ============================================================================
-        // 7. ส่งออกไฟล์ (.txt, .doc, .csv) คัดลอก และบันทึกประวัติ
-        // ============================================================================
-        function copyCorrectedText() {
-            const textToCopy = inputTextEl.value;
-            if (!textToCopy.trim()) {
-                showToast('ไม่มีข้อความสำหรับคัดลอก', 'warning');
-                return;
-            }
-            const tempTextarea = document.createElement('textarea');
-            tempTextarea.value = textToCopy;
-            tempTextarea.style.position = 'fixed';
-            tempTextarea.style.left = '-9999px';
-            document.body.appendChild(tempTextarea);
-            tempTextarea.select();
-            try {
-                document.execCommand('copy');
-                showToast('คัดลอกข้อความลงคลิปบอร์ดสำเร็จ!', 'success');
-            } catch (err) {
-                showToast('ไม่สามารถคัดลอกอัตโนมัติได้ กรุณากด Ctrl+C', 'warning');
-            }
-            document.body.removeChild(tempTextarea);
-        }
-
-        function downloadCorrectedTxt() {
-            const textToSave = inputTextEl.value;
-            if (!textToSave.trim()) {
-                showToast('ไม่มีข้อความสำหรับดาวน์โหลด', 'warning');
-                return;
-            }
-            const baseName = currentUploadedFileName || `เอกสารตรวจคำผิด_${new Date().toISOString().slice(0, 10)}`;
-            const blob = new Blob([textToSave], { type: 'text/plain;charset=utf-8' });
-            const url = URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = `${baseName}_แก้ไขแล้ว.txt`;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            URL.revokeObjectURL(url);
-            showToast('ดาวน์โหลดไฟล์ .txt สำเร็จ', 'success');
-        }
-
-        function downloadCorrectedDoc() {
-            const textToSave = inputTextEl.value;
-            if (!textToSave.trim()) {
-                showToast('ไม่มีข้อความสำหรับส่งออกเป็น Word', 'warning');
-                return;
-            }
-            const htmlBody = textToSave
-                .split('\n')
-                .map(line => `<p style="font-family: 'TH Sarabun New', 'Sarabun', sans-serif; font-size: 16pt; margin: 0 0 6pt 0;">${escapeHtml(line) || '&nbsp;'}</p>`)
-                .join('');
-
-            const docContent = `
-                <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
-                <head><meta charset='utf-8'><title>เอกสารที่แก้ไขคำผิดแล้ว</title></head>
-                <body>${htmlBody}</body>
-                </html>
-            `;
-            const baseName = currentUploadedFileName || `เอกสารตรวจคำผิด_${new Date().toISOString().slice(0, 10)}`;
-            const blob = new Blob(['\uFEFF', docContent], { type: 'application/msword;charset=utf-8' });
-            const url = URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = `${baseName}_แก้ไขแล้ว.doc`;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            URL.revokeObjectURL(url);
-            showToast('ส่งออกไฟล์เอกสาร Word (.doc) สำเร็จ', 'success');
-        }
-
-        function exportToCSV() {
-            if (currentIssues.length === 0) {
-                showToast('ไม่มีรายการจุดผิดสำหรับสร้างรายงาน CSV', 'info');
-                return;
-            }
-            const headers = ['ลำดับ', 'หมวดหมู่ความผิด', 'ข้อความเดิมที่พบ', 'คำแนะนำที่ถูกต้อง', 'สถานะ', 'คำอธิบายหลักภาษา'];
-            const rows = currentIssues.map((item, idx) => [
-                idx + 1,
-                `"${item.category.replace(/"/g, '""')}"`,
-                `"${item.original.replace(/"/g, '""')}"`,
-                `"${item.correct.replace(/"/g, '""')}"`,
-                item.fixed ? '"แก้ไขแล้ว"' : '"ยังไม่แก้ไข"',
-                `"${(item.reason || '').replace(/"/g, '""')}"`
-            ]);
-
-            const csvContent = '\uFEFF' + [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
-            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-            const url = URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = `รายงานตรวจคำผิดและไวยากรณ์_${new Date().toISOString().slice(0, 10)}.csv`;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            URL.revokeObjectURL(url);
-            showToast('⬇️ ดาวน์โหลดรายงาน CSV สำเร็จ', 'success');
-        }
-
-        function saveCurrentResult() {
-            const text = inputTextEl.value.trim();
-            if (!text) {
-                showToast('ไม่มีข้อความให้บันทึก', 'warning');
-                return;
-            }
-            const unfixedCount = currentIssues.filter(i => !i.fixed).length;
-            const record = {
-                id: Date.now(),
-                timestamp: new Date().toLocaleString('th-TH', { dateStyle: 'short', timeStyle: 'short' }),
-                preview: text.slice(0, 65) + (text.length > 65 ? '...' : ''),
-                fullText: inputTextEl.value,
-                issueCount: unfixedCount
-            };
-            checkHistory.unshift(record);
-            if (checkHistory.length > 15) checkHistory.pop();
-            localStorage.setItem('thaiSpellPro_history', JSON.stringify(checkHistory));
-            renderHistory();
-            showToast('💾 บันทึกผลตรวจลงประวัติเรียบร้อย', 'success');
-        }
-
-        function renderHistory() {
-            const historyListEl = document.getElementById('historyList');
-            if (checkHistory.length === 0) {
-                historyListEl.innerHTML = '<p class="text-xs text-slate-400 text-center py-4">ยังไม่มีรายการที่บันทึก</p>';
-                return;
-            }
-            historyListEl.innerHTML = checkHistory.map(item => `
-                <div onclick="loadHistoryItem(${item.id})" class="p-3 rounded-xl bg-slate-50 hover:bg-blue-50/70 border border-slate-200/80 cursor-pointer transition-all group">
-                    <div class="flex items-center justify-between text-[11px] text-slate-400 mb-1">
-                        <span>${item.timestamp}</span>
-                        <span class="font-medium ${item.issueCount > 0 ? 'text-red-600' : 'text-emerald-600'}">
-                            ${item.issueCount > 0 ? `พบจุดแก้ ${item.issueCount} จุด` : 'เรียบร้อยดี'}
-                        </span>
-                    </div>
-                    <p class="text-xs text-slate-700 line-clamp-2 group-hover:text-blue-900">${escapeHtml(item.preview)}</p>
-                </div>
-            `).join('');
-        }
-
-        function loadHistoryItem(id) {
-            const item = checkHistory.find(h => h.id === id);
-            if (!item) return;
-            inputTextEl.value = item.fullText;
+        function loadUserTestSentence() {
+            inputTextEl.value = `กา ทำงา ที่ไม่มีการวาแผนที่ดี`;
             runFullAnalysis();
-            showToast('โหลดข้อความจากประวัติเรียบร้อย', 'info');
         }
 
-        function clearHistory() {
-            checkHistory = [];
-            localStorage.removeItem('thaiSpellPro_history');
-            renderHistory();
-            showToast('ล้างประวัติการบันทึกแล้ว', 'info');
-        }
-
-        // ============================================================================
-        // 8. ปุ่มทดสอบสำเร็จรูป 3 แบบตามที่กำหนด
-        // ============================================================================
         function loadSample10Categories() {
             inputTextEl.value = `การทำงาที่ไม่มีกาวางแผง ย่อมส่งผลเสียต่อความสำเร็จขององค์กรในระยะยาว
 
