@@ -119,7 +119,7 @@
                         <h1 class="text-lg sm:text-2xl font-bold tracking-tight text-white">สแกนตรวจคำผิดและไวยากรณ์ภาษาไทย</h1>
                         <span class="px-2.5 py-0.5 text-[11px] font-semibold rounded-full bg-blue-500/25 text-blue-200 border border-blue-400/30">Gemini AI + Hybrid</span>
                     </div>
-                    <p class="text-xs sm:text-sm text-blue-200/90">ตรวจครบ 10 หมวดหมู่: พิมพ์ตก/เกิน สะกดผิด การันต์ วรรณยุกต์ เว้นวรรค คำสันธาน และไวยากรณ์</p>
+                    <p class="text-xs sm:text-sm text-blue-200/90">ตรวจครบ 15 หมวดหมู่: สะกด/พิมพ์ตก-เกิน/การันต์/วรรณยุกต์/เว้นวรรค/สันธาน/คำเชื่อม/ไวยากรณ์/ความหมาย/ระดับภาษา/โครงสร้างประโยค/วรรคตอน/ความต่อเนื่องของย่อหน้า</p>
                 </div>
             </div>
             <div class="flex items-center gap-2 self-end sm:self-center">
@@ -235,7 +235,7 @@
 
                         <button onclick="loadSample10Categories()" type="button" class="inline-flex items-center gap-1.5 px-3.5 py-2.5 rounded-full text-xs sm:text-sm font-medium bg-indigo-50 hover:bg-indigo-100 text-indigo-900 border border-indigo-200 transition-all cursor-pointer">
                             <i data-lucide="sparkles" class="w-3.5 h-3.5 text-indigo-600"></i>
-                            ทดสอบ 10 หมวดหมู่
+                            ทดสอบ 15 หมวดหมู่
                         </button>
 
                         <button onclick="loadSampleOfficialWithErrors()" type="button" class="inline-flex items-center gap-1.5 px-3.5 py-2.5 rounded-full text-xs sm:text-sm font-medium bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200 transition-all cursor-pointer">
@@ -257,7 +257,7 @@
                     <!-- แถบสถานะผลการตรวจ / Progress Bar -->
                     <div id="statusBanner" class="mt-4 px-4 py-3 rounded-xl bg-slate-100 text-slate-600 text-sm flex items-center gap-2.5">
                         <i data-lucide="info" class="w-4 h-4 text-blue-800 shrink-0"></i>
-                        <span>พร้อมวิเคราะห์ภาษาไทยครบ 10 หมวดหมู่ กดปุ่ม <strong>"ทดสอบ 10 หมวด (ทำงา/กาวางแผง)"</strong> หรือพิมพ์ข้อความของคุณได้เลย</span>
+                        <span>พร้อมวิเคราะห์ภาษาไทยครบ 15 หมวดหมู่ กดปุ่ม <strong>"ทดสอบ 10 หมวด (ทำงา/กาวางแผง)"</strong> หรือพิมพ์ข้อความของคุณได้เลย</span>
                     </div>
                 </section>
 
@@ -503,7 +503,24 @@
             "นะค่ะ": { correct: "นะคะ", category: "ใส่วรรณยุกต์ผิด", group: "spelling", reason: "คำลงท้าย 'นะคะ' ออกเสียงตรี ไม่มีไม้เอก (คำว่า 'ค่ะ' ใช้กับคำตอบรับหรือ 'ขอบคุณค่ะ')" },
             "โน๊ต": { correct: "โน้ต", category: "ใส่วรรณยุกต์ผิด", group: "spelling", reason: "อักษรต่ำ (น) ผันด้วยไม้โท (้) ออกเสียงตรี ไม่ใช้ไม้ตรี (๊)" },
             "เค๊ก": { correct: "เค้ก", category: "ใส่วรรณยุกต์ผิด", group: "spelling", reason: "อักษรต่ำ (ค) ผันด้วยไม้โท (้) ออกเสียงตรี เขียนว่า 'เค้ก'" },
-            "ช๊อปปิ้ง": { correct: "ช้อปปิ้ง", category: "ใส่วรรณยุกต์ผิด", group: "spelling", reason: "อักษรต่ำ (ช) ใช้ไม้โท (้) เขียนว่า 'ช้อปปิ้ง'" }
+            "ช๊อปปิ้ง": { correct: "ช้อปปิ้ง", category: "ใส่วรรณยุกต์ผิด", group: "spelling", reason: "อักษรต่ำ (ช) ใช้ไม้โท (้) เขียนว่า 'ช้อปปิ้ง'" },
+            "ข้อเท็จจริงปรากฎ": { correct: "ข้อเท็จจริงปรากฏ", category: "สะกดผิด", group: "spelling", reason: "คำว่า 'ปรากฏ' ใช้ ฏ ปฏัก" },
+            "ประสพ": { correct: "ประสบ", category: "สะกดผิด", group: "spelling", reason: "คำว่า 'ประสบ' ใช้ บ ใบไม้" },
+            "กิจกรรมต่างๆ": { correct: "กิจกรรมต่าง ๆ", category: "เว้นวรรคผิด", group: "spacing", reason: "เว้นวรรคก่อนเครื่องหมายไม้ยมกตามรูปแบบภาษาเขียน" },
+            "หน่วยงานที่เกี่ยวข้องทุกหน่วย": { correct: "หน่วยงานที่เกี่ยวข้อง", category: "ใช้คำผิดความหมาย", group: "grammar", reason: "อาจตัดคำซ้ำซ้อน หากบริบทไม่ได้เน้นทุกหน่วยโดยเฉพาะ" },
+            "นะค่ะ": { correct: "นะคะ", category: "ใส่วรรณยุกต์ผิด", group: "spelling", reason: "คำลงท้าย 'นะคะ' ใช้ คะ ไม่ใช้ ค่ะ" },
+            "ใช่ไหมค่ะ": { correct: "ใช่ไหมคะ", category: "ใส่วรรณยุกต์ผิด", group: "spelling", reason: "ประโยคคำถามใช้ 'คะ'" },
+            "หรือเปล่าค่ะ": { correct: "หรือเปล่าคะ", category: "ใส่วรรณยุกต์ผิด", group: "spelling", reason: "ประโยคคำถามใช้ 'คะ'" },
+            "ขอบคุณคะ": { correct: "ขอบคุณค่ะ", category: "ใส่วรรณยุกต์ผิด", group: "spelling", reason: "คำกล่าวขอบคุณใช้ 'ค่ะ'" },
+            "ลิ้งค์": { correct: "ลิงก์", category: "สะกดผิด", group: "spelling", reason: "รูปคำมาตรฐานคือ 'ลิงก์'" },
+            "คลิ๊ก": { correct: "คลิก", category: "สะกดผิด", group: "spelling", reason: "รูปคำมาตรฐานคือ 'คลิก'" },
+            "แอพพลิเคชั่น": { correct: "แอปพลิเคชัน", category: "สะกดผิด", group: "spelling", reason: "รูปคำมาตรฐานคือ 'แอปพลิเคชัน'" },
+            "แอปพลิเคชั่น": { correct: "แอปพลิเคชัน", category: "สะกดผิด", group: "spelling", reason: "ตัดสระ/พยางค์ที่เกินตามรูปคำมาตรฐาน 'แอปพลิเคชัน'" },
+            "อัพโหลด": { correct: "อัปโหลด", category: "สะกดผิด", group: "spelling", reason: "รูปคำมาตรฐานคือ 'อัปโหลด'" },
+            "ลิงค์": { correct: "ลิงก์", category: "ตัวการันต์ผิด", group: "spelling", reason: "รูปคำมาตรฐานคือ 'ลิงก์'" },
+            "ไวยกรณ์": { correct: "ไวยากรณ์", category: "พิมพ์ตก", group: "spelling", reason: "คำที่ถูกต้องคือ 'ไวยากรณ์'" },
+            "ประสิทธิ์ภาพ": { correct: "ประสิทธิภาพ", category: "ตัวการันต์ผิด", group: "spelling", reason: "คำว่า 'ประสิทธิภาพ' ไม่มีการันต์ที่ ธ" },
+            "ขะหนาด": { correct: "ขนาด", category: "สะกดผิด", group: "spelling", reason: "คำมาตรฐานคือ 'ขนาด'" }
         };
 
         // คลังคำศัพท์ภาษาไทยมาตรฐานสำหรับระบบ Fuzzy Matching & Edit Distance (ตรวจจับคำที่ไม่ปรากฏในพจนานุกรม)
@@ -528,7 +545,7 @@
             "แก้ไข", "ปัญหา", "อุปสรรค", "ข้อผิดพลาด", "คลาดเคลื่อน", "บกพร่อง", "เสียหาย", "เสื่อมสภาพ", "ชำรุด",
             "ซ่อมแซม", "บำรุงรักษา", "ตรวจสอบ", "รับรอง", "ยืนยัน", "ชี้แจง", "อธิบาย", "เสนอแนะ", "แนะนำ",
             "ที่ไม่มี", "ที่ดี", "อย่างยิ่ง", "อย่างเต็มที่", "โดยเร็ว", "ทันที", "สม่ำเสมอ", "ต่อเนื่อง", "ชัดเจน",
-            "ถูกต้อง", "ครบถ้วน", "สมบูรณ์", "เรียบร้อย", "รอบคอบ", "ระมัดระวัง", "โปร่งใส", "เป็นธรรม", "เหมาะสม"
+            "ถูกต้อง", "ครบถ้วน", "สมบูรณ์", "เรียบร้อย", "รอบคอบ", "ระมัดระวัง", "โปร่งใส", "เป็นธรรม", "เหมาะสม", "หนังสือราชการ", "บันทึกข้อความ", "หนังสือภายนอก", "หนังสือภายใน", "คำสั่ง", "ประกาศ", "รายงาน", "รายงานผล", "รายงานการประชุม", "หนังสือรับ", "หนังสือส่ง", "สารบรรณ", "งานสารบรรณ", "ธุรการ", "อำนวยการ", "ผู้บังคับบัญชา", "ผู้ใต้บังคับบัญชา", "ข้าราชการตำรวจ", "ตำรวจภูธร", "สถานีตำรวจ", "สถานีตำรวจภูธร", "สืบสวน", "สอบสวน", "พยานหลักฐาน", "สำนวนการสอบสวน", "สำนวนคดี", "ข้อเท็จจริง", "ข้อกฎหมาย", "ผู้ต้องหา", "ผู้เสียหาย", "พัสดุ", "จัดซื้อจัดจ้าง", "งบประมาณ", "เบิกจ่าย", "กำลังพล", "มอบหมาย", "มอบอำนาจ", "ปฏิบัติหน้าที่", "ปฏิบัติราชการ", "ประสานงาน", "บังคับบัญชา", "กำกับดูแล", "ติดตามผล", "ประเมินผล", "ความโปร่งใส", "ความรับผิดชอบ", "โดยเร็ว", "ตามที่", "ในการนี้", "จึงเรียนมาเพื่อโปรดทราบ", "จึงเรียนมาเพื่อโปรดพิจารณา", "ขอความอนุเคราะห์", "ขออนุมัติ", "ขออนุญาต", "เรียน", "เรียนมาเพื่อทราบ", "พ.ศ.", "เลขที่หนังสือ", "ลำดับ", "รายละเอียด", "เอกสารแนบ", "สิ่งที่ส่งมาด้วย"
         ];
         const THAI_LEXICON_SET = new Set(THAI_LEXICON);
 
@@ -714,7 +731,7 @@
             }
 
             setButtonLoading(true);
-            updateStatusBanner('กำลังวิเคราะห์โครงสร้างประโยค ตัวสะกด การเว้นวรรค และไวยากรณ์ครบ 10 หมวดหมู่...', 'loading');
+            updateStatusBanner('กำลังวิเคราะห์โครงสร้างประโยค ตัวสะกด การเว้นวรรค และไวยากรณ์ครบ 15 หมวดหมู่...', 'loading');
 
             // 1. รันระบบ Offline Smart Contextual & Fuzzy Engine ทันที (ได้ผล 100% แม้ไม่มี API Key)
             const offlineIssues = runOfflineRuleScanner(text);
@@ -784,22 +801,27 @@
             }
             const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
 
-            const systemPrompt = `คุณคือผู้เชี่ยวชาญด้านภาษาไทยและบรรณาธิการหนังสือราชการระดับสูง (อ้างอิงตามหลักเกณฑ์สำนักงานราชบัณฑิตยสภา)
-ภารกิจของคุณคือตรวจจับและวิเคราะห์ข้อผิดพลาดในข้อความภาษาไทยที่ได้รับอย่างละเอียด ครบถ้วนทั้ง 10 หมวดหมู่ต่อไปนี้:
-1. "พิมพ์ผิด" (คำที่พิมพ์ตัวอักษรผิดเพี้ยนจากบริบท)
-2. "สะกดผิด" (คำที่สะกดผิดจากพจนานุกรมราชบัณฑิตยสถาน เช่น อณุญาติ -> อนุญาต, สังเกตุ -> สังเกต, กฏหมาย -> กฎหมาย)
-3. "เว้นวรรคผิด" (เช่น ไม่เว้นวรรคหน้า/หลังไม้ยมก 'ๆ' เช่น 'ต่าง ๆ', เว้นวรรคผิดที่กลางคำ หรือติดกันเกินไปในประโยคราชการ)
-4. "ตัวการันต์ผิด" (เช่น เซ็นต์ -> เซ็น, สัปห์ดา -> สัปดาห์, อารมย์ -> อารมณ์)
-5. "พิมพ์ตก" (พิมพ์พยัญชนะ สระ หรือตัวสะกดตกหล่น เช่น 'กา ทำงา' -> 'การทำงาน', 'วาแผน' -> 'วางแผน', 'กาวางแผง' -> 'การวางแผน')
-6. "พิมพ์เกิน" (พิมพ์ตัวอักษร สระ หรือวรรณยุกต์เกินมา เช่น 'มาตราฐาน' -> 'มาตรฐาน', 'เเ' -> 'แ')
-7. "ใส่วรรณยุกต์ผิด" (ผันวรรณยุกต์ผิดความหมาย เช่น นะค่ะ -> นะคะ, คะ/ค่ะ สลับกัน, โน๊ต -> โน้ต)
-8. "ใช้คำสันธานผิด" (เช่น ใช้ 'เพราะว่า...จึง...' ซ้ำซ้อนเกินจำเป็นในภาษาเขียน, 'ถึงแม้ว่า...แต่...', 'เนื่องจาก...ดังนั้น...')
-9. "คำเชื่อมผิด" (ใช้คำเชื่อมหรือบุพบทผิดความหมาย เช่น 'กับ/แก่/แด่/ต่อ', 'เพื่อ/สำหรับ', 'และ/หรือ')
-10. "ผิดไวยากรณ์" (รูปประโยคไม่สมบูรณ์ ประธาน-กริยา-กรรมขาดหาย หรือใช้ภาษาพูดปนในเอกสารราชการ)
+            const systemPrompt = `คุณคือผู้เชี่ยวชาญภาษาไทย บรรณาธิการเอกสารราชการ และผู้ตรวจทานเอกสารงานตำรวจ โดยใช้หลักภาษาไทยและแนวทางการเขียนหนังสือราชการอย่างระมัดระวัง
+ตรวจข้อความทั้งระดับคำ ประโยค และย่อหน้า โดยใช้บริบทของย่อหน้าและเอกสารทั้งหมดที่ให้มา ไม่ตัดสินจากคำเดี่ยวเมื่อความหมายขึ้นกับบริบท ตรวจ 15 หมวดหมู่:
+1. พิมพ์ผิด (ตัวอักษรผิดตำแหน่ง)
+2. สะกดผิด (เทียบรูปคำมาตรฐาน)
+3. เว้นวรรคผิด (ช่องว่างระหว่างคำ/วลี/เครื่องหมาย)
+4. ตัวการันต์ผิด
+5. พิมพ์ตก (ตัวอักษรหรือคำตกหล่น)
+6. พิมพ์เกิน (ตัวอักษรหรือคำซ้ำเกิน)
+7. วรรณยุกต์/เครื่องหมายกำกับเสียงผิด
+8. ใช้คำสันธานผิดหรือซ้ำซ้อน
+9. ใช้คำเชื่อม/บุพบทผิดความหมาย
+10. ไวยากรณ์และโครงสร้างประโยคไม่สมบูรณ์
+11. ใช้คำผิดความหมายหรือเลือกคำไม่เหมาะกับบริบท
+12. ระดับภาษาไม่เป็นทางการหรือไม่เหมาะกับหนังสือราชการ
+13. ความสัมพันธ์ประธาน-กริยา/ส่วนขยาย/ลำดับข้อความผิดหรือกำกวม
+14. เครื่องหมายวรรคตอนและรูปแบบตัวเลข/วันที่ที่ผิดชัดเจน
+15. ความต่อเนื่องและความสอดคล้องของประโยค/ย่อหน้า (ประโยคซ้ำ ความหมายขัดกัน การอ้างอิงไม่ชัด)
 
-ข้อกำหนดสำคัญ:
-- "original" ต้องตรงกับข้อความที่ปรากฏในต้นฉบับทุกตัวอักษร (รวมช่องว่างถ้าเป็นเรื่องเว้นวรรคผิด)
-- หากข้อความถูกต้องตามหลักภาษาและหนังสือราชการแล้ว ให้คืนค่าเป็นอาร์เรย์ว่าง [] ห้ามจับผิดคำที่ถูกต้องอยู่แล้ว`;
+ให้ใช้คลังศัพท์ราชการและศัพท์งานตำรวจ เช่น หนังสือราชการ บันทึกข้อความ คำสั่ง รายงานการประชุม การสอบสวน การปฏิบัติหน้าที่ ผู้บังคับบัญชา ผู้ใต้บังคับบัญชา สำนวนคดี พัสดุ งบประมาณ และชื่อหน่วยงาน เป็นบริบทประกอบ แต่ห้ามถือชื่อบุคคล ชื่อหน่วยงาน ตัวย่อ รหัส เลขที่หนังสือ เลขประจำตัว วันเดือนปี หรือศัพท์เฉพาะว่าเป็นคำผิดเพียงเพราะไม่รู้จัก
+ข้อกำหนด: original ต้องตรงต้นฉบับทุกตัวอักษรและเป็นช่วงข้อความที่พบจริง; ห้ามเสนอ original ซ้ำกับ correct; อย่าแก้สำนวนที่เป็นทางเลือกหรือข้อความที่ถูกต้อง; อย่าคาดเดาข้อมูลราชการ/ข้อกฎหมาย; ข้อเสนอปรับสำนวนที่ไม่ใช่ข้อผิดชัดเจนให้ระบุเหตุผลว่าเป็นข้อเสนอด้านความชัดเจน/ความเป็นทางการ และอย่ารายงานถี่เกินไป; พิจารณาประโยคและย่อหน้าเพื่อรักษาความหมาย; หากไม่พบข้อผิดให้คืน []
+คืนผลเป็น JSON array ตาม schema เท่านั้น.`;
 
             const payload = {
                 systemInstruction: { parts: [{ text: systemPrompt }] },
@@ -819,7 +841,10 @@
                                     enum: [
                                         "พิมพ์ผิด", "สะกดผิด", "เว้นวรรคผิด", "ตัวการันต์ผิด",
                                         "พิมพ์ตก", "พิมพ์เกิน", "ใส่วรรณยุกต์ผิด",
-                                        "ใช้คำสันธานผิด", "คำเชื่อมผิด", "ผิดไวยากรณ์"
+                                        "ใช้คำสันธานผิด", "คำเชื่อมผิด", "ผิดไวยากรณ์",
+                                        "ใช้คำผิดความหมาย", "ระดับภาษาไม่เหมาะสม",
+                                        "โครงสร้างประโยคผิด", "วรรคตอน/รูปแบบผิด",
+                                        "ความต่อเนื่องของย่อหน้า"
                                     ]
                                 },
                                 reason: { type: "STRING", description: "คำอธิบายเหตุผลตามหลักภาษาไทยอย่างกระชับชัดเจน" }
@@ -865,7 +890,8 @@
                     searchFrom = idx + 1;
                 }
 
-                if (foundIdxInChunk !== -1) {
+                if (foundIdxInChunk !== -1 && item.original !== item.correct
+                    && fullText.slice(chunkOffset + foundIdxInChunk, chunkOffset + foundIdxInChunk + item.original.length) === item.original) {
                     locatedIssues.push({
                         id: 'ai_' + Math.random().toString(36).slice(2, 9),
                         original: item.original,
@@ -1076,6 +1102,52 @@
                 }
             }
 
+            // 9. ตรวจรูปแบบเว้นวรรค/เครื่องหมายซ้ำที่พบบ่อย (ไม่ปรับช่องว่างเพื่อจัดรูปแบบย่อหน้า)
+            const doubleSpaceRegex = / {2,}/g;
+            while ((m = doubleSpaceRegex.exec(text)) !== null) {
+                addIssueIfFree(m.index, m[0], ' ', 'เว้นวรรคผิด', 'spacing', 'พบช่องว่างซ้อนกันหลายเคาะ ควรเหลือหนึ่งเคาะในข้อความทั่วไป');
+            }
+            const spaceBeforePunctuation = /\s+([,;:!?])/g;
+            while ((m = spaceBeforePunctuation.exec(text)) !== null) {
+                addIssueIfFree(m.index, m[0], m[1], 'เว้นวรรคผิด', 'spacing', 'โดยทั่วไปไม่เว้นวรรคก่อนเครื่องหมายวรรคตอน');
+            }
+            const spaceAfterOpenParen = /([([{])\s+/g;
+            while ((m = spaceAfterOpenParen.exec(text)) !== null) {
+                addIssueIfFree(m.index, m[0], m[1], 'เว้นวรรคผิด', 'spacing', 'ไม่ควรเว้นวรรคทันทีหลังวงเล็บเปิด');
+            }
+            const spaceBeforeCloseParen = /\s+([)\]}])/g;
+            while ((m = spaceBeforeCloseParen.exec(text)) !== null) {
+                addIssueIfFree(m.index, m[0], m[1], 'เว้นวรรคผิด', 'spacing', 'ไม่ควรเว้นวรรคก่อนวงเล็บปิด');
+            }
+
+            // ตรวจคำซ้ำติดกันโดยไม่ตั้งใจ (เว้นคำที่เป็นรูปแบบซ้ำหรือถ้อยคำที่ถูกต้อง)
+            const repeatedWordRegex = /([\u0E00-\u0E7F]{2,})\s+\1/g;
+            while ((m = repeatedWordRegex.exec(text)) !== null) {
+                if (["ต่าง", "มาก", "นาน"].includes(m[1])) continue;
+                addIssueIfFree(m.index, m[0], m[1], 'พิมพ์เกิน', 'spelling', 'พบคำเดิมซ้ำติดกัน อาจเกิดจากการพิมพ์ซ้ำ โปรดตรวจบริบท');
+            }
+
+            // ตรวจช่องว่างที่แทรกกลางคำราชการ/วลีที่รู้จัก (รายการจำกัดเพื่อหลีกเลี่ยงการจับผิดเกิน)
+            const officialPhraseSpacing = [
+                ['ข้าราชการ ตำรวจ', 'ข้าราชการตำรวจ'], ['สถานี ตำรวจ', 'สถานีตำรวจ'],
+                ['หนังสือ ราชการ', 'หนังสือราชการ'], ['บันทึก ข้อความ', 'บันทึกข้อความ'],
+                ['ผู้ บังคับบัญชา', 'ผู้บังคับบัญชา'], ['พยาน หลักฐาน', 'พยานหลักฐาน'],
+                ['จัดซื้อ จัดจ้าง', 'จัดซื้อจัดจ้าง']
+            ];
+            for (const [wrongPhrase, rightPhrase] of officialPhraseSpacing) {
+                let pos = 0;
+                while ((pos = text.indexOf(wrongPhrase, pos)) !== -1) {
+                    addIssueIfFree(pos, wrongPhrase, rightPhrase, 'เว้นวรรคผิด', 'spacing', 'พบช่องว่างกลางวลีที่ใช้เป็นคำประสมหรือคำศัพท์ราชการ');
+                    pos += wrongPhrase.length;
+                }
+            }
+
+            // ตรวจรูปแบบวรรคตอนเบื้องต้น โดยไม่เปลี่ยนเลขที่หนังสือ/ชื่อเฉพาะ
+            const punctuationRepeat = /([,;:!?])\1+/g;
+            while ((m = punctuationRepeat.exec(text)) !== null) {
+                addIssueIfFree(m.index, m[0], m[1], 'วรรคตอน/รูปแบบผิด', 'spacing', 'พบเครื่องหมายวรรคตอนซ้ำหลายตัว ควรตรวจและใช้เครื่องหมายเท่าที่จำเป็น');
+            }
+
             return issues.sort((a, b) => a.index - b.index);
         }
 
@@ -1116,23 +1188,29 @@
 
         // รวมผลลัพธ์จาก AI และ Offline โดยไม่ให้ช่วงตัวอักษรทับซ้อนกัน
         function mergeAndDeduplicateIssues(fullText, aiIssues, offlineIssues) {
-            const combined = [...aiIssues];
-            for (const off of offlineIssues) {
-                const offEnd = off.index + off.original.length;
-                const overlapsWithAi = combined.some(ai => {
-                    const aiEnd = ai.index + ai.original.length;
-                    return !(offEnd <= ai.index || off.index >= aiEnd);
-                });
-                if (!overlapsWithAi) {
-                    combined.push(off);
-                }
+            const candidates = [...aiIssues, ...offlineIssues]
+                .filter(issue => issue && typeof issue.original === 'string' && issue.original.length > 0
+                    && typeof issue.correct === 'string' && issue.original !== issue.correct
+                    && Number.isInteger(issue.index) && issue.index >= 0
+                    && issue.index + issue.original.length <= fullText.length
+                    && fullText.slice(issue.index, issue.index + issue.original.length) === issue.original)
+                .sort((a, b) => a.index - b.index || b.original.length - a.original.length);
+            const combined = [];
+            const seen = new Set();
+            for (const issue of candidates) {
+                const key = `${issue.index}|${issue.original}|${issue.correct}|${issue.category}`;
+                if (seen.has(key)) continue;
+                seen.add(key);
+                const end = issue.index + issue.original.length;
+                if (combined.some(existing => !(end <= existing.index || issue.index >= existing.index + existing.original.length))) continue;
+                combined.push(issue);
             }
             return combined.sort((a, b) => a.index - b.index);
         }
 
         function mapCategoryToGroup(category) {
             if (category === 'เว้นวรรคผิด') return 'spacing';
-            if (['ใช้คำสันธานผิด', 'คำเชื่อมผิด', 'ผิดไวยากรณ์'].includes(category)) return 'grammar';
+            if (['ใช้คำสันธานผิด', 'คำเชื่อมผิด', 'ผิดไวยากรณ์', 'ใช้คำผิดความหมาย', 'ระดับภาษาไม่เหมาะสม', 'โครงสร้างประโยคผิด', 'วรรคตอน/รูปแบบผิด', 'ความต่อเนื่องของย่อหน้า'].includes(category)) return 'grammar';
             return 'spelling';
         }
 
@@ -1599,7 +1677,7 @@
             if (loading) {
                 btn.disabled = true;
                 btn.classList.add('opacity-75', 'cursor-wait');
-                btn.innerHTML = `<svg class="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg><span>กำลังวิเคราะห์ 10 หมวด...</span>`;
+                btn.innerHTML = `<svg class="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg><span>กำลังวิเคราะห์ 15 หมวด...</span>`;
             } else {
                 btn.disabled = false;
                 btn.classList.remove('opacity-75', 'cursor-wait');
